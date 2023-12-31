@@ -5,7 +5,7 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stage1", "Stage1\Stage1.csproj", "{FBC77EAC-5565-4BB3-8EFE-2648F0AE5787}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP_Realization", "OOP_Realization\OOP_Realization.csproj", "{6EF1019D-6BE4-4A51-8F86-90404CE3CB49}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Services.csproj", "{334617D6-FAA7-4E83-B499-B7C01EAE0B70}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,15 +17,15 @@ Global
 		{FBC77EAC-5565-4BB3-8EFE-2648F0AE5787}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBC77EAC-5565-4BB3-8EFE-2648F0AE5787}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBC77EAC-5565-4BB3-8EFE-2648F0AE5787}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6EF1019D-6BE4-4A51-8F86-90404CE3CB49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6EF1019D-6BE4-4A51-8F86-90404CE3CB49}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6EF1019D-6BE4-4A51-8F86-90404CE3CB49}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6EF1019D-6BE4-4A51-8F86-90404CE3CB49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{334617D6-FAA7-4E83-B499-B7C01EAE0B70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{334617D6-FAA7-4E83-B499-B7C01EAE0B70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{334617D6-FAA7-4E83-B499-B7C01EAE0B70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{334617D6-FAA7-4E83-B499-B7C01EAE0B70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {6F5C5918-37DF-4D25-9AC7-231BEA7A56EB}
+		SolutionGuid = {C1E33890-6ECE-4C84-A2F0-2371FEE193D2}
 	EndGlobalSection
 EndGlobal
