@@ -9,13 +9,11 @@
         public static decimal EuroToDollarExchangeRate { get; private set; } = 1.11M;
         public static decimal DollarToEuroExchangeRate { get; private set; } = 0.90M;
 
-        public Currency(Person person, int value, CurrencyType currencyType) 
+        public Currency(int value, CurrencyType currencyType) 
         {
-            Person = person;
             Value = value;
             TypeCurrency = currencyType;
         }
-        public Person Person { get; private set; }
         public decimal Value { get; private set; }
         public CurrencyType TypeCurrency { get; private set; }
         public void ExChange(CurrencyType exTypeChange)
