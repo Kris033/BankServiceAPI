@@ -1,6 +1,7 @@
 ﻿using Models;
 using PracticeWithTypes.Extensions;
 using Services;
+using System.Diagnostics;
 
 namespace PracticeWithTypes
 {
@@ -13,6 +14,7 @@ namespace PracticeWithTypes
             employees.AddRandomEmployees();
 
             BankService bankService = new BankService();
+
             employees.Add(
                 bankService
                 .ClientConversionEmployee(
@@ -20,8 +22,20 @@ namespace PracticeWithTypes
             employees.UpdateSalaryDirectors(bankService);
             employees.UpdateContractEmployees();
 
-            employees.ForEach(e => 
-                Console.WriteLine(e.GetEmployeeInformation()));
+            CheckTimeBoxingUnBoxing();
+        }
+        public static void CheckTimeBoxingUnBoxing()
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            Client client = new Client("Ксения");
+            stopwatch.Start();
+            object oClient = client;
+            stopwatch.Stop();
+            Console.WriteLine("Упаковка: " + stopwatch.Elapsed.Ticks); // 25 - ~36
+            stopwatch.Restart();
+            client = (Client)oClient;
+            stopwatch.Stop();
+            Console.WriteLine("Распаковка: " + stopwatch.Elapsed.Ticks); // 7 - ~12
         }
     }
 }
