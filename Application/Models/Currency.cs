@@ -42,6 +42,12 @@
             }, 2);
             TypeCurrency = exTypeChange;
         }
+        public void ChangeValue(decimal valueNow)
+            => Value = Math.Round(valueNow, 2);
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
     public enum CurrencyType
     {

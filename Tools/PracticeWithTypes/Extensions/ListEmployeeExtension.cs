@@ -43,16 +43,8 @@ namespace PracticeWithTypes.Extensions
             {
                 JobPosition job = (JobPosition)
                     rand.Next(0, countJobPositions);
-                Currency salary = new Currency(job switch
-                {
-                    JobPosition.Trainee => 200,
-                    JobPosition.Cashier => 900,
-                    JobPosition.Security => 1100,
-                    JobPosition.Director => 0,
-                    _ => throw new Exception("Должность не найденна")
-                }, CurrencyType.Dollar);
                 listEmployee.Add(new Employee(
-                    names[i], job, salary,
+                    names[i], job,
                     new DateOnly(2021, 7, 21),
                     new DateOnly(2024, 7, 21)
                     ));
