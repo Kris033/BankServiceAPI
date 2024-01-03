@@ -12,19 +12,21 @@
         public Employee(
             string name,
             JobPosition jobPosition,
+            Currency salary,
             DateOnly startWorkDate,
             DateOnly endContractDate) 
             : base(name) 
         {
             JobPositionType = jobPosition;
-            Salary = new Currency (jobPosition switch 
-            {
-                JobPosition.Trainee => 200,
-                JobPosition.Cashier => 900,
-                JobPosition.Security => 1100,
-                JobPosition.Director => 0,
-                _ => throw new InvalidDataException("Такой должности не существует")
-            }, CurrencyType.Dollar);
+            //Salary = new Currency (jobPosition switch 
+            //{
+            //    JobPosition.Trainee => 200,
+            //    JobPosition.Cashier => 900,
+            //    JobPosition.Security => 1100,
+            //    JobPosition.Director => 0,
+            //    _ => throw new InvalidDataException("Такой должности не существует")
+            //}, CurrencyType.Dollar);
+            Salary = salary;
             _startWorkDate = startWorkDate;
             _endContractDate = endContractDate;
         }
@@ -41,6 +43,7 @@
             return new Employee(
                 client.Name, 
                 JobPosition.Trainee,
+                new Currency(0, CurrencyType.Dollar),
                 new DateOnly(2024, 6, 5),
                 new DateOnly(2025, 6, 5));
         }

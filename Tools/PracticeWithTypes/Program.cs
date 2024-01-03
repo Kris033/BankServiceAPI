@@ -3,7 +3,6 @@ using PracticeWithTypes.Extensions;
 using Services;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace PracticeWithTypes
 {
@@ -11,24 +10,43 @@ namespace PracticeWithTypes
     {
         static void Main(string[] args)
         {
-            //List<Employee> employees = new List<Employee>();
-            //employees.Capacity = 20;
-            //employees.AddRandomEmployees();
+            var dataGenerator = new TestDataGenerator();
+            var employees = dataGenerator.GenerationEmployee(1000);
+            var clients = dataGenerator.GenerationClients(1000);
+            var dictionaryPhoneClients = dataGenerator.GenerationDictionaryPhone(1000);
 
-            //BankService bankService = new BankService();
+            BankService bankService = new BankService();
+            employees.UpdateSalaryDirectors(bankService);
+            employees.UpdateContractEmployees();
 
-            //employees.Add(
-            //    bankService
-            //    .ClientConversionEmployee(
-            //        new Client("Евгений")));
-            //employees.UpdateSalaryDirectors(bankService);
-            //employees.UpdateContractEmployees();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            clients.Any(c => c.NumberPhone == "123-4567-890");
+            stopwatch.Stop();
+            Console.WriteLine(GetResultTimeSearch(stopwatch));
+            stopwatch.Restart();
+            dictionaryPhoneClients.Any(d => d.Key == "430-2113-234");
+            stopwatch.Stop();
+            Console.WriteLine(GetResultTimeSearch(stopwatch)); // ~5мс - ~100мс
 
-            ImmitationWorkQueue();
+            Console.WriteLine("--Клиенты младше 18 лет--");
+            clients
+                .Where(c => c.Age < 18)
+                .ToList()
+                .ForEach(c => Console.WriteLine(c.GetClient()));
+            Console.WriteLine($"Самая минимальная заработная плата: {employees.Min(e => e.Salary.Value)} {CurrencyType.Dollar}");
 
-
-            //CheckTimeBoxingUnBoxing();
+            var lastElementDictionary = dictionaryPhoneClients.Last();
+            stopwatch.Restart();
+            dictionaryPhoneClients.FirstOrDefault(d => d.Key == lastElementDictionary.Key);
+            stopwatch.Stop();
+            Console.WriteLine(GetResultTimeSearch(stopwatch));
+            stopwatch.Restart();
+            dictionaryPhoneClients.Where(d => d.Key == lastElementDictionary.Key);
+            stopwatch.Stop();
+            Console.WriteLine(GetResultTimeSearch(stopwatch));
         }
+        public static string GetResultTimeSearch(Stopwatch stopwatch) => "Поиск занял: " + stopwatch.Elapsed.TotalMilliseconds + " мс";
         public static void ImmitationWorkQueue()
         {
             Random rand = new Random();
@@ -36,14 +54,7 @@ namespace PracticeWithTypes
             List<Account> accounts = new List<Account>();
             EventHandler<string> eventHandler = PrintMessage;
             accounts.Capacity = 20;
-            List<Client> clients = new List<Client>
-            {
-                new Client("Алекс"), new Client("Олег"), new Client("Иван"), new Client("Максим"),
-                new Client("Алексей"), new Client("Михаил"), new Client("Виктор"), new Client("Николай"), 
-                new Client("Анастасия"), new Client("Александр"), new Client("Александра"), new Client("Татьяна"),
-                new Client("Изя"), new Client("Григорий"), new Client("Дмитрий"), new Client("Богдан"),
-                new Client("Андрей"), new Client("Даниил"), new Client("Павел"), new Client("Ростислав")
-            };
+            List<Client> clients = new TestDataGenerator().GenerationClients(20);
             
             for (int i = 0; i < accounts.Capacity; i++)
             {
@@ -76,18 +87,6 @@ namespace PracticeWithTypes
         public static void PrintMessage(object? sender, PropertyChangedEventArgs e) 
             => Console.WriteLine(e.PropertyName);
         public static void PrintMessage(string message) => Console.WriteLine(message);
-        public static void CheckTimeBoxingUnBoxing()
-        {
-            Stopwatch stopwatch = new Stopwatch();
-            Client client = new Client("Ксения");
-            stopwatch.Start();
-            object oClient = client;
-            stopwatch.Stop();
-            Console.WriteLine("Упаковка: " + stopwatch.Elapsed.Ticks); // 25 - ~36
-            stopwatch.Restart();
-            client = (Client)oClient;
-            stopwatch.Stop();
-            Console.WriteLine("Распаковка: " + stopwatch.Elapsed.Ticks); // 7 - ~12
-        }
+
     }
 }
