@@ -5,11 +5,13 @@ namespace Models
     public class Account : INotifyPropertyChanged
     {
         public Client Client { get; }
-        public Account(Client client, Currency balance)
+        public Account(Client client, string accountNumber, Currency balance)
         {
             Client = client;
+            AccountNumber = accountNumber;
             BankAccount = balance;
         }
+        public string AccountNumber { get; private set; }
         public Currency BankAccount { get; private set; }
         public delegate void AccountHandler (string message);
         public event AccountHandler? Notify;
@@ -51,6 +53,16 @@ namespace Models
             PropertyChanged?.Invoke(this, 
                 new PropertyChangedEventArgs(
                     message + " " + Balance));
+        }
+        public override int GetHashCode() => AccountNumber.GetHashCode();
+        public override bool Equals(object? obj)
+        {
+            if(obj == null || obj is not Account) 
+                return false;
+            var account = (Account)obj;
+            return 
+                account.AccountNumber == AccountNumber &&
+                account.Client.Equals(Client);
         }
     }
     public static class AccountCurrencyExtensions

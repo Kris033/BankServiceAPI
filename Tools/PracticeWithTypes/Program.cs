@@ -11,7 +11,7 @@ namespace PracticeWithTypes
         static void Main(string[] args)
         {
             var dataGenerator = new TestDataGenerator();
-            var employees = dataGenerator.GenerationEmployee(1000);
+            var employees = dataGenerator.GenerationEmployees(1000);
             var clients = dataGenerator.GenerationClients(1000);
             var dictionaryPhoneClients = dataGenerator.GenerationDictionaryPhone(1000);
 
@@ -33,7 +33,7 @@ namespace PracticeWithTypes
             clients
                 .Where(c => c.Age < 18)
                 .ToList()
-                .ForEach(c => Console.WriteLine(c.GetClient()));
+                .ForEach(c => Console.WriteLine(c.GetInformation()));
             Console.WriteLine($"Самая минимальная заработная плата: {employees.Min(e => e.Salary.Value)} {CurrencyType.Dollar}");
 
             var lastElementDictionary = dictionaryPhoneClients.Last();
@@ -45,6 +45,7 @@ namespace PracticeWithTypes
             dictionaryPhoneClients.Where(d => d.Key == lastElementDictionary.Key);
             stopwatch.Stop();
             Console.WriteLine(GetResultTimeSearch(stopwatch));
+            Console.WriteLine(new DateTime(2021, 4, 12) == new DateTime(2021, 4, 12));
         }
         public static string GetResultTimeSearch(Stopwatch stopwatch) => "Поиск занял: " + stopwatch.Elapsed.TotalMilliseconds + " мс";
         public static void ImmitationWorkQueue()
@@ -54,14 +55,23 @@ namespace PracticeWithTypes
             List<Account> accounts = new List<Account>();
             EventHandler<string> eventHandler = PrintMessage;
             accounts.Capacity = 20;
-            List<Client> clients = new TestDataGenerator().GenerationClients(20);
+            var generator = new TestDataGenerator();
+            List<Client> clients = generator.GenerationClients(20);
             
             for (int i = 0; i < accounts.Capacity; i++)
             {
-                var account = new Account(clients[i], new Currency(rand.Next(0, 15000), CurrencyType.LeiMD));
+                string numberAccountRand = string.Empty;
+                int index = 1;
+                while (index <= 4)
+                {
+                    if (numberAccountRand.Length != 0)
+                        numberAccountRand += " ";
+                    numberAccountRand += rand.Next(1000, 10000);
+                    index++;
+                }
+                var account = new Account(clients[i], numberAccountRand, new Currency(rand.Next(0, 15000), CurrencyType.LeiMD));
                 account.PropertyChanged += PrintMessage;
                 account.Notify += PrintMessage;
-                clients[i].Account = account;
                 accounts.Add(account);
                 if (queue.Count > 12)
                     eventHandler?.Invoke(eventHandler, "Превышено мест в очереди, дождитесь пока не появится свободное место");

@@ -2,17 +2,22 @@
 {
     public class Client : Person
     {
-        public Client(string name, int age, string numberPhone) : base(name)
+        public Client(string name, int age, string numberPhone) 
+            : base(name, age, numberPhone) { }
+        public override string GetInformation() 
+            => $"Клиент: {Name}\n" + 
+            $"Возраст: {Age}\n" +
+            $"Телефон: {NumberPhone}\n";
+        public override int GetHashCode() => NumberPhone.GetHashCode();
+        public override bool Equals(object? obj)
         {
-            Age = age;
-            NumberPhone = numberPhone;
+            if(obj == null || obj is not Client) 
+                return false;
+            var client = (Client)obj;
+            return 
+                client.Name == Name &&
+                client.NumberPhone == NumberPhone &&
+                client.Age == Age;
         }
-        public int Age { get; private set; }
-        public string NumberPhone { get; private set; }
-        public Account Account { get; set; }
-        public string GetClient()
-            => $"Клиент: {Name}\n" +
-               $"Возраст: {Age}\n" +
-               $"Телефон: {NumberPhone}";
     }
 }
