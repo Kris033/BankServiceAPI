@@ -11,11 +11,13 @@
     {
         public Employee(
             string name,
+            int age,
+            string numberPhone,
             JobPosition jobPosition,
             Currency salary,
             DateOnly startWorkDate,
             DateOnly endContractDate) 
-            : base(name) 
+            : base(name, age, numberPhone) 
         {
             JobPositionType = jobPosition;
             //Salary = new Currency (jobPosition switch 
@@ -41,7 +43,9 @@
         public static explicit operator Employee(Client client)
         {
             return new Employee(
-                client.Name, 
+                client.Name,
+                client.Age,
+                client.NumberPhone,
                 JobPosition.Trainee,
                 new Currency(0, CurrencyType.Dollar),
                 new DateOnly(2024, 6, 5),
@@ -50,14 +54,30 @@
         public void UpdateSalary(Currency currency) => Salary = currency;
         public DateOnly GetStartDateWork => _startWorkDate;
         public DateOnly GetEndContractDate => _endContractDate;
-        public string GetEmployeeInformation()
+        public override string GetInformation()
         {
             return $"Имя: {Name}\n" +
+                $"Возраст: {Age}\n" +
+                $"Номер телефона: {NumberPhone}\n" +
                 $"Должность: {JobPositionType}\n" +
                 $"Заработная плата: {Salary.Value} {Salary.TypeCurrency}\n" +
                 $"Приступил к работе: {_startWorkDate}\n" +
                 $"Контракт заканчивается через " +
                 $"{Convert.ToDateTime(_endContractDate.ToString()).Subtract(DateTime.Today).TotalDays} дней\n";
+        }
+        public override int GetHashCode()
+        {
+            return NumberPhone.GetHashCode();
+        }
+        public override bool Equals(object? obj)
+        {
+            if(obj == null || obj is not Employee) 
+                return false;
+            var employee = (Employee)obj;
+            return 
+                employee.Name == Name &&
+                employee.Age == employee.Age &&
+                employee.NumberPhone == employee.NumberPhone;
         }
     }
 }
