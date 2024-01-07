@@ -2,7 +2,7 @@
 
 namespace Models
 {
-    public class Account : INotifyPropertyChanged
+    public class Account : INotifyPropertyChanged, IComparable<Account>
     {
         public Client Client { get; }
         public Account(Client client, string accountNumber, Currency balance)
@@ -63,6 +63,13 @@ namespace Models
             return 
                 account.AccountNumber == AccountNumber &&
                 account.Client.Equals(Client);
+        }
+
+        public int CompareTo(Account account)
+        {
+            if (!account.Balance.Equals(Balance))
+                return account.Balance.CompareTo(Balance);
+            return account.AccountNumber.CompareTo(AccountNumber);
         }
     }
     public static class AccountCurrencyExtensions

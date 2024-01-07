@@ -1,6 +1,8 @@
-﻿namespace Models
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Models
 {
-    public struct Currency
+    public struct Currency : IComparable<Currency>
     {
         public static decimal LeiToDollarExchangeRate { get; private set; } = 0.0058M;
         public static decimal DollarToLeiExchangeRate { get; private set; } = 17.30M;
@@ -44,9 +46,20 @@
         }
         public void ChangeValue(decimal valueNow)
             => Value = Math.Round(valueNow, 2);
-        public override int GetHashCode()
+        public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            return base.GetHashCode();
+            if (obj == null || obj is not Currency)
+                return false;
+            var currency = (Currency)obj;
+            return 
+                currency.TypeCurrency == currency.TypeCurrency &&
+                currency.Value == currency.Value;
+        }
+        public int CompareTo(Currency currency)
+        {
+            if (currency.TypeCurrency != TypeCurrency)
+                return TypeCurrency.CompareTo(currency.TypeCurrency);
+            return Convert.ToInt32(Value - currency.Value);
         }
     }
     public enum CurrencyType
