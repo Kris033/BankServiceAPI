@@ -46,6 +46,11 @@ namespace PracticeWithTypes
             stopwatch.Stop();
             Console.WriteLine(GetResultTimeSearch(stopwatch));
             Console.WriteLine(new DateTime(2021, 4, 12) == new DateTime(2021, 4, 12));
+            var accounts = dataGenerator.GenerationAccounts(100).OrderByDescending(a => a.AccountNumber);
+            foreach (var account in accounts)
+            {
+                Console.WriteLine(account.AccountNumber);
+            }
         }
         public static string GetResultTimeSearch(Stopwatch stopwatch) => "Поиск занял: " + stopwatch.Elapsed.TotalMilliseconds + " мс";
         public static void ImmitationWorkQueue()
