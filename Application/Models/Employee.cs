@@ -10,24 +10,15 @@
     public class Employee : Person
     {
         public Employee(
-            string name,
-            int age,
+            Passport passport,
             string numberPhone,
             JobPosition jobPosition,
             Currency salary,
             DateOnly startWorkDate,
             DateOnly endContractDate) 
-            : base(name, age, numberPhone) 
+            : base(passport, numberPhone) 
         {
             JobPositionType = jobPosition;
-            //Salary = new Currency (jobPosition switch 
-            //{
-            //    JobPosition.Trainee => 200,
-            //    JobPosition.Cashier => 900,
-            //    JobPosition.Security => 1100,
-            //    JobPosition.Director => 0,
-            //    _ => throw new InvalidDataException("Такой должности не существует")
-            //}, CurrencyType.Dollar);
             Salary = salary;
             _startWorkDate = startWorkDate;
             _endContractDate = endContractDate;
@@ -43,8 +34,7 @@
         public static explicit operator Employee(Client client)
         {
             return new Employee(
-                client.Name,
-                client.Age,
+                client.Passport!,
                 client.NumberPhone,
                 JobPosition.Trainee,
                 new Currency(0, CurrencyType.Dollar),

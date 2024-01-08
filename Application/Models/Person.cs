@@ -2,11 +2,25 @@
 {
     public class Person
     {
-        public Person(string name, int age, string numberPhone)
+        public Person(Passport? passport, string numberPhone)
         {
-            Name = name;
-            Age = age;
+            Passport = passport;
             NumberPhone = numberPhone;
+        }
+        private Passport? _passport;
+        public Passport? Passport
+        {
+            get { return _passport; }
+            private set
+            {
+                _passport = value;
+                if(_passport != null)
+                {
+                    Name = _passport.GetFullName();
+                    Age = _passport.GetAge();
+                }
+                if (_passport == value) return;
+            }
         }
         public string Name { get; private set; } = string.Empty;
         public int Age { get; private set; }

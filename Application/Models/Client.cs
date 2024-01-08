@@ -2,9 +2,9 @@
 {
     public class Client : Person
     {
-        public Client(string name, int age, string numberPhone) 
-            : base(name, age, numberPhone) { }
-        public override string GetInformation() 
+        public Client(string numberPhone, Passport? passport)
+            : base(passport, numberPhone) { }
+        public override string GetInformation()
             => $"Клиент: {Name}\n" + 
             $"Возраст: {Age}\n" +
             $"Телефон: {NumberPhone}\n";
