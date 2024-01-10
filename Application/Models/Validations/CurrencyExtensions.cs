@@ -1,6 +1,4 @@
-﻿using Models;
-
-namespace Services.Validations
+﻿namespace Models.Validations
 {
     public static partial class CurrencyExtensions
     {

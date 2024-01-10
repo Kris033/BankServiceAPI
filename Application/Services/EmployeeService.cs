@@ -1,24 +1,23 @@
 ﻿using Models;
 using Models.Filters;
 using Services.Storage;
-using Services.Validations;
+using Models.Validations;
 
 namespace Services
 {
     public class EmployeeService
     {
-        private readonly EmployeeStorage _employees;
+        private readonly IEmployeeStorage _employees;
         public EmployeeService() 
         {
             _employees = new EmployeeStorage(
                 new TestDataGenerator()
-                    .GenerationEmployees(50)
-                    .ToArray());
+                    .GenerationEmployees(50));
         }
-        public Employee GetFirstEmployee() => _employees.First();
+        public Employee GetFirstEmployee() => _employees.DataEmployees.First();
         public EmployeeStorage GetEmployees(GetFilterRequest? filterRequest = null)
         {
-            var employees = _employees.AsQueryable();
+            var employees = _employees.DataEmployees.AsQueryable();
             if(filterRequest != null)
             {
                 if (!string.IsNullOrWhiteSpace(filterRequest.SearchFullName))
@@ -48,21 +47,21 @@ namespace Services
                             .Passport!
                             .DateBorn <= filterRequest.DateBornTo);
             }
-            return new EmployeeStorage(employees.ToArray());
+            return new EmployeeStorage(employees.ToList());
         }
         public Employee GetYoungestEmployee() 
-            => _employees
+            => _employees.DataEmployees
                 .First(e => e
-                    .Age == _employees
+                    .Age == _employees.DataEmployees
                         .Min(ea => ea.Age));
         public Employee GetOldestEmployee()
-            => _employees
+            => _employees.DataEmployees
                 .First(e => e
-                    .Age == _employees
+                    .Age == _employees.DataEmployees
                         .Max(ea => ea.Age));
         public int GetAverrageAgeEmployees() 
-            => _employees.Any() == false 
-            ? _employees.Sum(e => e.Age) / _employees.Count()
+            => _employees.DataEmployees.Any() == false 
+            ? _employees.DataEmployees.Sum(e => e.Age) / _employees.DataEmployees.Count()
             : 0;
         public void AddEmployee(Employee employee)
         {
@@ -71,12 +70,12 @@ namespace Services
         }
         public void ChangeEmployee(int id, Employee employee)
         {
-            if(_employees.Count() < id || id < 0)
+            if(_employees.DataEmployees.Count() < id || id < 0)
                 throw new ArgumentOutOfRangeException("Такого работника по идентификатору не было найдено, т.к. вышло за пределы листа");
             employee.Validation();
-            if (_employees[id].Passport != employee.Passport)
+            if (_employees.DataEmployees[id].Passport != employee.Passport)
                 throw new ArgumentException("Работник не совпадает с изменяемым работником");
-            _employees.Insert(id, employee);
+            _employees.Update(employee);
         }
     }
 }

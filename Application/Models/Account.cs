@@ -4,7 +4,7 @@ namespace Models
 {
     public class Account : INotifyPropertyChanged, IComparable<Account>
     {
-        public Client Client { get; }
+        public Client Client { get; set; }
         public Account(Client client, string accountNumber, Currency balance)
         {
             Client = client;
@@ -65,8 +65,9 @@ namespace Models
                 account.Client.Equals(Client);
         }
 
-        public int CompareTo(Account account)
+        public int CompareTo(Account? account)
         {
+            if (account == null) return -1;
             if (!account.Balance.Equals(Balance))
                 return account.Balance.CompareTo(Balance);
             return account.AccountNumber.CompareTo(AccountNumber);

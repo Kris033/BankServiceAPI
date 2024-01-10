@@ -1,6 +1,5 @@
 ﻿using Bogus;
 using Models;
-using System.Linq;
 
 namespace Services
 {
@@ -28,22 +27,9 @@ namespace Services
                         _fakerRu.Person.Address.ToString())))
                 .ToList();
         public List<Employee> GenerationEmployees(int count)
-            => Enumerable.Range(1, count).Select(_ => 
+            => Enumerable.Range(1, count).Select(_ =>
                 new Employee(
-                    new Passport(
-                        _fakerRu.Person.FirstName,
-                        _fakerRu.Person.LastName,
-                        null,
-                        (GenderType)_fakerRu.Person.Gender,
-                        _fakerRu.Date.BetweenDateOnly(
-                            new DateOnly(1980, 6, 20),
-                            new DateOnly(2004, 9, 12)),
-                        "город Тирасполь", "г. Тирасполь, УВД ПМР, д.24",
-                        _fakerRu.Date.BetweenDateOnly(
-                            new DateOnly(1980, 6, 20),
-                            new DateOnly(2004, 9, 12)),
-                        _fakerRu.Random.ReplaceNumbers("1-ПР №0#####"),
-                        _fakerRu.Person.Address.ToString()),
+                    GenerationPassport(),
                     _fakerRu.Random.ReplaceNumbers("###-####-###"),
                     (JobPosition)_fakerRu.Random.Number(0, 3),
                     new Currency(_fakerRu.Random.Number(120, 2500), CurrencyType.Dollar),
@@ -56,20 +42,7 @@ namespace Services
                 new Account(
                     new Client(
                         _fakerRu.Random.ReplaceNumbers("###-####-###"),
-                        new Passport(
-                            _fakerRu.Person.FirstName,
-                            _fakerRu.Person.LastName,
-                            null,
-                            (GenderType)_fakerRu.Person.Gender,
-                            _fakerRu.Date.BetweenDateOnly(
-                                new DateOnly(1980, 6, 20),
-                                new DateOnly(2004, 9, 12)),
-                            "город Тирасполь", "г. Тирасполь, УВД ПМР, д.24",
-                            _fakerRu.Date.BetweenDateOnly(
-                                new DateOnly(1980, 6, 20),
-                                new DateOnly(2004, 9, 12)),
-                            _fakerRu.Random.ReplaceNumbers("1-ПР №0#####"),
-                            _fakerRu.Person.Address.ToString())),
+                        GenerationPassport()),
                     _fakerRu.Random.ReplaceNumbers("#### #### #### ####"),
                     new Currency(
                         _fakerRu.Random.Number(10, 5000),
@@ -85,8 +58,8 @@ namespace Services
                     .ToList();
         public Passport GenerationPassport()
             => new Passport(
-                _fakerRu.Person.FirstName,
-                _fakerRu.Person.LastName,
+                _fakerRu.Name.FirstName(),
+                _fakerRu.Name.LastName(),
                 null,
                 (GenderType)_fakerRu.Person.Gender,
                 _fakerRu.Date.BetweenDateOnly(
