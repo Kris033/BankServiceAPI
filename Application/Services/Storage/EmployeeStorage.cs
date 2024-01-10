@@ -3,22 +3,34 @@ using System.Collections;
 
 namespace Services.Storage
 {
-    public class EmployeeStorage : IEnumerable<Employee>
+    public class EmployeeStorage : IEnumerable<Employee>, IEmployeeStorage
     {
-        private Employee[] _employees;
-        public EmployeeStorage(Employee[] employees) => _employees = employees;
-        public EmployeeStorage() => _employees = new Employee[0];
-        public Employee this[int index] => _employees[index];
-        public void Add(Employee employee)
-        {
-            Array.Resize(ref _employees, _employees.Length + 1);
-            _employees[^1] = employee;
-        }
-        public void Insert(int id, Employee employee) 
-            => _employees[id] = employee;
+        public List<Employee> DataEmployees { get; }
+        public EmployeeStorage(List<Employee> employees) => DataEmployees = employees;
+        public EmployeeStorage() => DataEmployees = new List<Employee>();
+        public Employee this[int index] => DataEmployees[index];
         public IEnumerator<Employee> GetEnumerator() 
-            => ((IEnumerable<Employee>)_employees).GetEnumerator();
+            => ((IEnumerable<Employee>)DataEmployees).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Add(Employee employee) 
+            => DataEmployees.Add(employee);
+
+        public void Update(Employee employee) 
+        {
+            var foundEmployee = DataEmployees
+                .First(e => e.Passport == employee.Passport);
+            var index = DataEmployees.IndexOf(foundEmployee);
+            DataEmployees.Insert(index, employee);
+        }
+
+        public void Delete(Employee employee)
+        {
+            var foundEmployee = DataEmployees
+                .First(e => e.Passport == employee.Passport);
+            var index = DataEmployees.IndexOf(foundEmployee);
+            DataEmployees.RemoveAt(index);
+        }
     }
 }

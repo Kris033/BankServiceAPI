@@ -1,4 +1,8 @@
-﻿namespace Models
+﻿
+
+using Models.Validations;
+
+namespace Models
 {
     public class Person
     {
@@ -22,9 +26,14 @@
                 if (_passport == value) return;
             }
         }
-        public string Name { get; private set; } = string.Empty;
-        public int Age { get; private set; }
-        public string NumberPhone { get; private set; }
+        public string Name { get; protected set; } = string.Empty;
+        public int Age { get; protected set; }
+        public string NumberPhone { get; protected set; }
+        public void ChangeNumberPhone(string number)
+        {
+            this.ValidationFieldPhoneNumber(number);
+            NumberPhone = number;
+        }
         public virtual string GetInformation()
         {
             return $"Имя: {Name}\n" + 

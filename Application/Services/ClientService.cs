@@ -2,26 +2,30 @@
 using Models;
 using Models.Filters;
 using Services.Storage;
-using Services.Validations;
+using Models.Validations;
 
 namespace Services
 {
     public class ClientService
     {
-        private readonly Dictionary<Client, List<Account>> _dictionaryAccountsClient;
-        private readonly ClientStorage _clients = new ClientStorage();
+        private readonly IClientStorage _accountsClient;
         public ClientService() 
         {
-            _dictionaryAccountsClient = new TestDataGenerator().GenerationDictionaryAccount(50);
+            _accountsClient = new ClientStorage(
+                new TestDataGenerator()
+                    .GenerationDictionaryAccount(50));
         }
 
-        public Client GetFirstClient() => _dictionaryAccountsClient.FirstOrDefault().Key;
+        public Client GetFirstClient() => _accountsClient.Data.FirstOrDefault().Key;
 
         public KeyValuePair<Client, List<Account>> GetFirstClientWithAccounts() 
-            => _dictionaryAccountsClient.FirstOrDefault();
-        public ClientStorage GetClients(GetFilterRequest? filterRequest = null)
+            => _accountsClient.Data.FirstOrDefault();
+        public List<Client> GetClients(GetFilterRequest? filterRequest = null)
         {
-            var clients = _clients.AsQueryable();
+            var clients = _accountsClient
+                .Data
+                .Keys
+                .AsQueryable();
             if (filterRequest != null)
             {
                 if (!string.IsNullOrWhiteSpace(filterRequest.SearchFullName))
@@ -51,56 +55,50 @@ namespace Services
                             .Passport!
                             .DateBorn <= filterRequest.DateBornTo);
             }
-            return new ClientStorage(clients.ToArray());
+            return clients.ToList();
         }
         
         public Client GetYoungestClient()
-            => _clients
+            => _accountsClient.Data.Keys
                 .First(e => e
-                    .Age == _clients
+                    .Age == _accountsClient.Data.Keys
                         .Min(ea => ea.Age));
         public Client GetOldestClient()
-            => _clients
+            => _accountsClient.Data.Keys
                 .First(e => e
-                    .Age == _clients
+                    .Age == _accountsClient.Data.Keys
                         .Max(ea => ea.Age));
         public int GetAverrageAgeClientss()
-            => _clients.Any() == false
-            ? _clients.Sum(e => e.Age) / _clients.Count()
+            => _accountsClient.Data.Keys.Any()
+            ? _accountsClient.Data.Keys.Sum(e => e.Age) / _accountsClient.Data.Keys.Count
             : 0;
 
         public void AddClient(Client client)
         {
-            client.ValidationPerson();
-            _clients.Add(client);
-            _dictionaryAccountsClient.Add(
-                client, 
-                new List<Account>()
-                {
+            client.Validation();
+            _accountsClient.Add(client);
+            _accountsClient
+                .AddAccount(
                     new Account(
                         client,
                         new Faker().Random.ReplaceNumbers("#### #### #### ####"),
-                        new Currency(0, CurrencyType.Dollar))
-                });
+                        new Currency(0, CurrencyType.Dollar)));
         }
         public void AddAccount(Client client, Account account)
         {
-            if (!_dictionaryAccountsClient.ContainsKey(client))
+            if (!_accountsClient.Data.ContainsKey(client))
                 throw new ArgumentNullException("Такого клиента в реестре банка не существует");
             account.Validation();
-            _dictionaryAccountsClient[client].Add(account);
+            _accountsClient.AddAccount(account);
         }
         public void ChangeAccountClient(Client client, Account account)
         {
-            if (!_dictionaryAccountsClient.ContainsKey(client))
+            if (!_accountsClient.Data.ContainsKey(client))
                 throw new ArgumentNullException("Такого клиента в реестре банка не существует");
-            if (!_dictionaryAccountsClient[client].Any(a => a.AccountNumber == account.AccountNumber))
+            if (!_accountsClient.Data[client].Any(a => a.AccountNumber == account.AccountNumber))
                 throw new ArgumentNullException("Такого банковского счета у клиента не существует");
             account.Validation();
-            _dictionaryAccountsClient[client].ForEach(a => 
-            {
-                if (a.Equals(account)) a = account;
-            });
+            _accountsClient.UpdateAccount(account);
         }
     }
 }
