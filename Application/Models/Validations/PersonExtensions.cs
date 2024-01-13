@@ -6,8 +6,6 @@ namespace Models.Validations
     {
         public static void ValidationPerson(this Person person)
         {
-            if (person.Passport == null)
-                throw new ArgumentNullException("Отсутствуют паспортные данные");
             if (person.Age < 18)
                 throw new Under18Exception("Человек младше 18 лет");
             person.ValidationFieldPhoneNumber(person.NumberPhone);

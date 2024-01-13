@@ -1,9 +1,13 @@
-﻿namespace Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Models
 {
-    public struct Contract
+    [Table("contract")]
+    public class Contract
     {
         public Contract(
-            Employee employee,
+            Guid employeeId,
             string nameCompany,
             string adress,
             string city,
@@ -12,7 +16,7 @@
             string otherCondition
             )
         {
-            Employee = employee;
+            EmployeeId = employeeId;
             NameCompany = nameCompany;
             Adress = adress;
             City = city;
@@ -20,28 +24,25 @@
             WorkTime = workTime;
             OtherCondition = otherCondition;
         }
-        public Employee Employee { get; set; }
+        [Key]
+        [Column("id")]
+        public Guid Id { get; set; }
+        [ForeignKey("EmployeeId")]
+        [Column("employee_id")]
+        public Guid EmployeeId { get; set; }
+        [Column("name_company")]
         public string NameCompany { get; private set; }
+        [Column("adress")]
         public string Adress { get; private set; }
+        [Column("city")]
         public string City { get; private set; }
+        [Column("mail_index")]
         public string MailIndex { get; private set; }
+        [Column("work_time")]
         public string WorkTime { get; private set; }
+        [Column("other_condition")]
         public string OtherCondition { get; private set; }
-        public string GetContract()
-            => $"{NameCompany}\n" +
-               $"{Adress}\n" +
-               $"{City} {MailIndex}\n\n" +
-               $"{Employee.GetStartDateWork}\n\n" +
-               "Договор о найме сотрудника\n\n" +
-               $"Между {NameCompany}, в дальнейшем называемой \"Работодатель\", и {Employee.Name}, в дальнейшем называемым \"Сотрудник\", заключен следующий договор:\n" +
-               $"1. Описание работы: Сотрудник принят на должность {Employee.JobPositionType}. Он обязуется выполнять свои обязанности согласно требованиям, предъявляемым к этой должности Работодателем.\n" +
-               $"2. Заработная плата: Работодатель обязуется выплачивать Сотруднику заработную плату в размере {Employee.Salary.Value} {Employee.Salary.TypeCurrency} в соответствии с установленным графиком выплаты зарплаты.\n\n" +
-               $"3. График работы: Рабочее время {WorkTime}.\n\n" +
-               $"4. Прочие условия: Стороны также договариваются о {OtherCondition}.\n\n" +
-               $"5. Срок действия: Настоящий договор вступает в силу с момента подписания обеими сторонами и действует до {Employee.GetEndContractDate}.\n\n" +
-               "6. Заключительные положения: Любые изменения или дополнения к настоящему договору действительны, если они оформлены в письменной форме и подписаны обеими сторонами.\n\n" +
-               "Подписи сторон:\n\n" +
-               "Работодатель: _______________________\n\n" +
-               "Сотрудник: _______________________\n\n";
+        [Column("main_contract")]
+        public string? MainContract { get; set; }
     }
 }

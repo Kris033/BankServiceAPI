@@ -1,60 +1,42 @@
-﻿namespace Models
+﻿using Models.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Models
 {
-    public enum JobPosition
-    {
-        Trainee,
-        Cashier,
-        Security,
-        Director
-    }
+    [Table("employee")]
     public class Employee : Person
     {
         public Employee(
-            Passport passport,
+            Guid passportId,
             string numberPhone,
-            JobPosition jobPosition,
-            Currency salary,
+            string name,
+            int age,
+            JobPosition jobPositionType,
+            Guid currencyIdSalary,
             DateOnly startWorkDate,
             DateOnly endContractDate) 
-            : base(passport, numberPhone) 
+            : base(passportId, numberPhone, name, age) 
         {
-            JobPositionType = jobPosition;
-            Salary = salary;
-            _startWorkDate = startWorkDate;
-            _endContractDate = endContractDate;
+            JobPositionType = jobPositionType;
+            CurrencyIdSalary = currencyIdSalary;
+            StartWorkDate = startWorkDate;
+            EndContractDate = endContractDate;
         }
-        private string? _contract { get; set; }
-        private DateOnly _startWorkDate { get; set; }
-        private DateOnly _endContractDate { get; set; }
+        [Column("contract_id")]
+        public Guid? ContractId { get; set; }
+        [Required]
+        [Column("start_work_date")]
+        public DateOnly StartWorkDate { get; set; }
+        [Required]
+        [Column("end_contract_date")]
+        public DateOnly EndContractDate { get; set; }
+        [Required]
+        [Column("job_position_type")]
         public JobPosition JobPositionType { get; private set; }
-        public Currency Salary { get; private set; }
-        public void UpdateContract(Contract contract) 
-            => _contract = contract.GetContract();
-
-        public static explicit operator Employee(Client client)
-        {
-            return new Employee(
-                client.Passport!,
-                client.NumberPhone,
-                JobPosition.Trainee,
-                new Currency(0, CurrencyType.Dollar),
-                new DateOnly(2024, 6, 5),
-                new DateOnly(2025, 6, 5));
-        }
-        public void UpdateSalary(Currency currency) => Salary = currency;
-        public DateOnly GetStartDateWork => _startWorkDate;
-        public DateOnly GetEndContractDate => _endContractDate;
-        public override string GetInformation()
-        {
-            return $"Имя: {Name}\n" +
-                $"Возраст: {Age}\n" +
-                $"Номер телефона: {NumberPhone}\n" +
-                $"Должность: {JobPositionType}\n" +
-                $"Заработная плата: {Salary.Value} {Salary.TypeCurrency}\n" +
-                $"Приступил к работе: {_startWorkDate}\n" +
-                $"Контракт заканчивается через " +
-                $"{Convert.ToDateTime(_endContractDate.ToString()).Subtract(DateTime.Today).TotalDays} дней\n";
-        }
+        [ForeignKey("CurrencyId")]
+        [Column("currency_id")]
+        public Guid CurrencyIdSalary { get; private set; }
         public override int GetHashCode()
         {
             return NumberPhone.GetHashCode();

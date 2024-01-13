@@ -1,8 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Models.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Models
 {
-    public struct Currency : IComparable<Currency>
+    [Table("currency")]
+    public class Currency : IComparable<Currency>
     {
         public static decimal LeiToDollarExchangeRate { get; private set; } = 0.0058M;
         public static decimal DollarToLeiExchangeRate { get; private set; } = 17.30M;
@@ -11,12 +15,17 @@ namespace Models
         public static decimal EuroToDollarExchangeRate { get; private set; } = 1.11M;
         public static decimal DollarToEuroExchangeRate { get; private set; } = 0.90M;
 
-        public Currency(int value, CurrencyType currencyType) 
+        public Currency(decimal value, CurrencyType typeCurrency) 
         {
             Value = value;
-            TypeCurrency = currencyType;
+            TypeCurrency = typeCurrency;
         }
+        [Key]
+        [Column("id")]
+        public Guid Id { get; set; }
+        [Column("value")]
         public decimal Value { get; private set; }
+        [Column("type_currency")]
         public CurrencyType TypeCurrency { get; private set; }
         public void ExChange(CurrencyType exTypeChange)
         {
@@ -61,11 +70,5 @@ namespace Models
                 return TypeCurrency.CompareTo(currency.TypeCurrency);
             return Convert.ToInt32(Value - currency.Value);
         }
-    }
-    public enum CurrencyType
-    {
-        Euro,
-        Dollar,
-        LeiMD
     }
 }

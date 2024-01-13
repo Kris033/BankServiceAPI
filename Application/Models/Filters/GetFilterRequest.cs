@@ -7,5 +7,6 @@
         public string? SearchNumberPassport { get; set; }
         public DateOnly? DateBornFrom { get; set; }
         public DateOnly? DateBornTo { get; set; }
+        public int? CountItem { get; set; }
     }
 }

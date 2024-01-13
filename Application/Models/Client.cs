@@ -1,13 +1,13 @@
-﻿namespace Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Models
 {
+    [Table("client")]
     public class Client : Person
     {
-        public Client(string numberPhone, Passport? passport)
-            : base(passport, numberPhone) { }
-        public override string GetInformation()
-            => $"Клиент: {Name}\n" + 
-            $"Возраст: {Age}\n" +
-            $"Телефон: {NumberPhone}\n";
+        public Client(string numberPhone, Guid passportId, string name, int age)
+            : base(passportId, numberPhone, name, age) { }
         public override int GetHashCode() => NumberPhone.GetHashCode();
         public override bool Equals(object? obj)
         {

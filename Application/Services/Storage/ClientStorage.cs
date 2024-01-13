@@ -1,10 +1,13 @@
-﻿using Models;
+﻿using BankDbConnection;
+using Models;
 using System.Collections;
 
 namespace Services.Storage
 {
     public class ClientStorage : IEnumerable<Client>, IClientStorage
     {
+        private Client? GetClientById(Guid idClient)
+            => new BankContext().Client.FirstOrDefault(c => c.Id == idClient);
         public Dictionary<Client, List<Account>> Data { get; }
         public ClientStorage(Dictionary<Client, List<Account>> clientsAccount)
         {
@@ -29,12 +32,11 @@ namespace Services.Storage
             var foundClient = Data.First(ca => ca.Key.NumberPhone == client.NumberPhone);
             foundClient.Value.ForEach(a => 
             {
-                a.Client = client;
+                a.ClientId = client.Id;
             });
             if (Data.Remove(foundClient.Key))
                 Data.Add(client, foundClient.Value);
         }
-
         public void Delete(Client client)
         {
             Data.Remove(client);
@@ -42,20 +44,24 @@ namespace Services.Storage
 
         public void AddAccount(Account account)
         {
-            Data[account.Client].Add(account);
+            var client = GetClientById(account.ClientId);
+            if(client != null) Data[client].Add(account);
         }
 
         public void UpdateAccount(Account account)
         {
-            Data[account.Client].ForEach(a =>
-            {
-                if (a.AccountNumber == account.AccountNumber) a = account;
-            });
+            var client = GetClientById(account.ClientId);
+            if (client != null) 
+                Data[client].ForEach(a =>
+                {
+                    if (a.AccountNumber == account.AccountNumber) a = account;
+                });
         }
 
         public void DeleteAccount(Account account)
         {
-            Data[account.Client].Remove(account);
+            var client = GetClientById(account.ClientId);
+            if (client != null) Data[client].Remove(account);
         }
 
     }

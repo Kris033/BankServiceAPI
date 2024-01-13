@@ -1,4 +1,5 @@
 ﻿using Models;
+using Models.Enums;
 using PracticeWithTypes.Extensions;
 using Services;
 using System.ComponentModel;
@@ -10,49 +11,56 @@ namespace PracticeWithTypes
     {
         static void Main(string[] args)
         {
+            
             var dataGenerator = new TestDataGenerator();
-            var employees = dataGenerator.GenerationEmployees(1000);
-            var clients = dataGenerator.GenerationClients(1000);
-            var dictionaryPhoneClients = dataGenerator.GenerationDictionaryPhone(1000);
+            var servicePassport = new PassportService();
 
-            BankService bankService = new BankService();
-            employees.UpdateSalaryDirectors(bankService);
-            employees.UpdateContractEmployees();
+            servicePassport.AddPassport(dataGenerator.GenerationPassport()); 
+            //var employees = dataGenerator.GenerationEmployees(1000);
+            //var clients = dataGenerator.GenerationClients(1000);
+            //var dictionaryPhoneClients = dataGenerator.GenerationDictionaryPhone(1000);
 
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            clients.Any(c => c.NumberPhone == "123-4567-890");
-            stopwatch.Stop();
-            Console.WriteLine(GetResultTimeSearch(stopwatch));
-            stopwatch.Restart();
-            dictionaryPhoneClients.Any(d => d.Key == "430-2113-234");
-            stopwatch.Stop();
-            Console.WriteLine(GetResultTimeSearch(stopwatch)); // ~5мс - ~100мс
+            //BankService bankService = new BankService();
+            //employees.UpdateSalaryDirectors(bankService);
+            //employees.UpdateContractEmployees();
 
-            Console.WriteLine("--Клиенты младше 18 лет--");
-            clients
-                .Where(c => c.Age < 18)
-                .ToList()
-                .ForEach(c => Console.WriteLine(c.GetInformation()));
-            Console.WriteLine($"Самая минимальная заработная плата: {employees.Min(e => e.Salary.Value)} {CurrencyType.Dollar}");
+            //Stopwatch stopwatch = new Stopwatch();
+            //stopwatch.Start();
+            //clients.Any(c => c.NumberPhone == "123-4567-890");
+            //stopwatch.Stop();
+            //Console.WriteLine(GetResultTimeSearch(stopwatch));
+            //stopwatch.Restart();
+            //dictionaryPhoneClients.Any(d => d.Key == "430-2113-234");
+            //stopwatch.Stop();
+            //Console.WriteLine(GetResultTimeSearch(stopwatch)); // ~5мс - ~100мс
 
-            var lastElementDictionary = dictionaryPhoneClients.Last();
-            stopwatch.Restart();
-            dictionaryPhoneClients.FirstOrDefault(d => d.Key == lastElementDictionary.Key);
-            stopwatch.Stop();
-            Console.WriteLine(GetResultTimeSearch(stopwatch));
-            stopwatch.Restart();
-            dictionaryPhoneClients.Where(d => d.Key == lastElementDictionary.Key);
-            stopwatch.Stop();
-            Console.WriteLine(GetResultTimeSearch(stopwatch));
-            Console.WriteLine(new DateTime(2021, 4, 12) == new DateTime(2021, 4, 12));
-            var accounts = dataGenerator.GenerationAccounts(100).OrderByDescending(a => a.AccountNumber);
-            foreach (var account in accounts)
-            {
-                Console.WriteLine(account.AccountNumber);
-            }
+            //Console.WriteLine("--Клиенты младше 18 лет--");
+            //clients
+            //    .Where(c => c.Age < 18)
+            //    .ToList()
+            //    .ForEach(c => Console.WriteLine(c.GetInformation()));
+            //Console.WriteLine($"Самая минимальная заработная плата: {employees.Min(e => e.Salary.Value)} {CurrencyType.Dollar}");
+
+            //var lastElementDictionary = dictionaryPhoneClients.Last();
+            //stopwatch.Restart();
+            //dictionaryPhoneClients.FirstOrDefault(d => d.Key == lastElementDictionary.Key);
+            //stopwatch.Stop();
+            //Console.WriteLine(GetResultTimeSearch(stopwatch));
+            //stopwatch.Restart();
+            //dictionaryPhoneClients.Where(d => d.Key == lastElementDictionary.Key);
+            //stopwatch.Stop();
+            //Console.WriteLine(GetResultTimeSearch(stopwatch));
+            //Console.WriteLine(new DateTime(2021, 4, 12) == new DateTime(2021, 4, 12));
+            //var accounts = dataGenerator.GenerationAccounts(100).OrderByDescending(a => a.AccountNumber);
+            //foreach (var account in accounts)
+            //{
+            //    Console.WriteLine(account.AccountNumber);
+            //}
+            
+
         }
         public static string GetResultTimeSearch(Stopwatch stopwatch) => "Поиск занял: " + stopwatch.Elapsed.TotalMilliseconds + " мс";
+        /*
         public static void ImmitationWorkQueue()
         {
             Random rand = new Random();
@@ -97,6 +105,7 @@ namespace PracticeWithTypes
 
 
         }
+        */
 
         private static void PrintMessage(object? sender, string e) => Console.WriteLine(e);
         public static void PrintMessage(object? sender, PropertyChangedEventArgs e) 

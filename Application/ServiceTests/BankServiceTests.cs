@@ -12,10 +12,12 @@ namespace ServiceTests
             //Arrange
             BankService service = new BankService();
             TestDataGenerator generator = new TestDataGenerator();
+            EmployeeService employeeService = new EmployeeService();
 
             //Act
             var employee = generator.GenerationEmployees(1).First();
-            service.AddToBlackList((Person)employee);
+            service.AddToBlackList(employee);
+            employeeService.ChangeEmployee(employee);
 
             //Assert
             Assert.True(service.IsPersonInBlackList(employee));
