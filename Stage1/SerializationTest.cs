@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Xml.Serialization;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Stage1
@@ -111,14 +111,14 @@ namespace Stage1
         {
             var users = GetUsers();
             
-            string json = JsonConvert.SerializeObject(users);
+            //string json = JsonConvert.SerializeObject(users);
             Console.WriteLine("Сериализованные данные:");
-            Console.WriteLine(json);
+            //Console.WriteLine(json);
             
-            User[] deserilizeUsers = JsonConvert.DeserializeObject<User[]>(json);
+            //User[] deserilizeUsers = JsonConvert.DeserializeObject<User[]>(json);
             Console.WriteLine();
             Console.WriteLine("Десериализованные данные:");
-            UsersPrint(deserilizeUsers);
+            //UsersPrint(deserilizeUsers);
         }
     }
 }

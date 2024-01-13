@@ -1,44 +1,38 @@
-﻿
-
-using Models.Validations;
+﻿using Models.Validations;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Models
 {
     public class Person
     {
-        public Person(Passport? passport, string numberPhone)
+        public Person(Guid passportId, string numberPhone, string name, int age)
         {
-            Passport = passport;
+            PassportId = passportId;
             NumberPhone = numberPhone;
+            Name = name;
+            Age = age;
         }
-        private Passport? _passport;
-        public Passport? Passport
-        {
-            get { return _passport; }
-            private set
-            {
-                _passport = value;
-                if(_passport != null)
-                {
-                    Name = _passport.GetFullName();
-                    Age = _passport.GetAge();
-                }
-                if (_passport == value) return;
-            }
-        }
-        public string Name { get; protected set; } = string.Empty;
-        public int Age { get; protected set; }
-        public string NumberPhone { get; protected set; }
+        public Guid PassportId { get; set; }
+        public Passport? Passport { get; set; }
+        [Key]
+        [Column("id")]
+        public Guid Id { get; set; }
+        [Required]
+        [Column("name")]
+        public string Name { get; set; } = string.Empty;
+        [Required]
+        [Column("age")]
+        public int Age { get; set; }
+        [Required]
+        [Column("number_phone")]
+        public string NumberPhone { get; set; }
+        [Column("in_black_list")]
+        public bool InBlackList { get; set; } = false;
         public void ChangeNumberPhone(string number)
         {
             this.ValidationFieldPhoneNumber(number);
             NumberPhone = number;
-        }
-        public virtual string GetInformation()
-        {
-            return $"Имя: {Name}\n" + 
-                $"Возраст: {Age}\n" +
-                $"Номер телефона: {NumberPhone}\n";
         }
         public override int GetHashCode()
         {

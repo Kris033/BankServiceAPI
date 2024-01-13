@@ -2,24 +2,32 @@
 using Models.Filters;
 using Services.Storage;
 using Models.Validations;
+using BankDbConnection;
 
 namespace Services
 {
     public class EmployeeService
     {
-        private readonly IEmployeeStorage _employees;
+        private readonly IEmployeeStorage _employees = new EmployeeStorage();
+        private BankContext _bankContext;
         public EmployeeService() 
         {
-            _employees = new EmployeeStorage(
-                new TestDataGenerator()
-                    .GenerationEmployees(50));
+            _bankContext = new BankContext();
         }
         public Employee GetFirstEmployee() => _employees.DataEmployees.First();
-        public EmployeeStorage GetEmployees(GetFilterRequest? filterRequest = null)
+        public List<Employee> GetEmployees(GetFilterRequest? filterRequest = null)
         {
-            var employees = _employees.DataEmployees.AsQueryable();
-            if(filterRequest != null)
+            var employees = _bankContext.Employee.AsQueryable();
+            if (filterRequest != null)
             {
+                var passportService = new PassportService();
+                List<Passport> passportList = new List<Passport>();
+                employees.ToList().ForEach(c =>
+                {
+                    var passport = passportService.GetPassport(c.PassportId);
+                    if (passport != null) passportList.Add(passport);
+                });
+                var passports = passportList.AsQueryable();
                 if (!string.IsNullOrWhiteSpace(filterRequest.SearchFullName))
                     employees = employees
                         .Where(e => e
@@ -31,51 +39,93 @@ namespace Services
                             .NumberPhone
                             .Contains(filterRequest.SearchNumberPhone));
                 if (!string.IsNullOrWhiteSpace(filterRequest.SearchNumberPassport))
-                    employees = employees
-                        .Where(e => e
-                            .Passport!
+                    passports = passports
+                        .Where(p => p!
                             .NumberPassport
                             .Contains(filterRequest.SearchNumberPassport));
                 if (filterRequest.DateBornFrom != null)
-                    employees = employees
-                        .Where(e => e
-                            .Passport!
+                    passports = passports
+                        .Where(p => p!
                             .DateBorn >= filterRequest.DateBornFrom);
                 if (filterRequest.DateBornTo != null)
-                    employees = employees
-                        .Where(e => e
-                            .Passport!
+                    passports = passports
+                        .Where(p => p!
                             .DateBorn <= filterRequest.DateBornTo);
+                passportList = passports.ToList();
+                var employeeList = employees.ToList();
+                if (passportList.Count > 0)
+                    employeeList = employeeList.Where(c => passportList.Any(p => c.PassportId == p.Id)).ToList();
+                if (filterRequest.CountItem != null && filterRequest.CountItem > 0 && filterRequest.CountItem < employeeList.Count())
+                    employeeList = employeeList.Take((int)filterRequest.CountItem).ToList();
+                return employeeList.ToList();
             }
-            return new EmployeeStorage(employees.ToList());
+            return employees.ToList();
         }
         public Employee GetYoungestEmployee() 
-            => _employees.DataEmployees
+            => _bankContext.Employee
                 .First(e => e
-                    .Age == _employees.DataEmployees
+                    .Age == _bankContext.Employee
                         .Min(ea => ea.Age));
         public Employee GetOldestEmployee()
-            => _employees.DataEmployees
+            => _bankContext.Employee
                 .First(e => e
-                    .Age == _employees.DataEmployees
+                    .Age == _bankContext.Employee
                         .Max(ea => ea.Age));
         public int GetAverrageAgeEmployees() 
-            => _employees.DataEmployees.Any() == false 
-            ? _employees.DataEmployees.Sum(e => e.Age) / _employees.DataEmployees.Count()
+            => _bankContext.Employee.Any() == false 
+            ? _bankContext.Employee.Sum(e => e.Age) / _bankContext.Employee.Count()
             : 0;
+        public Employee? GetEmployee(Guid idEmployee)
+            => _bankContext.Employee.FirstOrDefault(e => e.Id == idEmployee);
+        public string GetSalary(Guid idSalaryCurrency)
+        {
+            using var db = new BankContext();
+            var salary = db.Currency.FirstOrDefault(c => c.Id == idSalaryCurrency);
+            return salary is null 
+                ? "Информация отсутствует" 
+                : $"{salary.Value} {salary.TypeCurrency}";
+        }
+        public string GetInformation(Employee employee)
+        {
+            return $"Имя: {employee.Name}\n" +
+                $"Возраст: {employee.Age}\n" +
+                $"Номер телефона: {employee.NumberPhone}\n" +
+                $"Должность: {employee.JobPositionType}\n" +
+                $"Заработная плата: {GetSalary(employee.CurrencyIdSalary)}\n" +
+                $"Приступил к работе: {employee.StartWorkDate}\n" +
+                $"Контракт заканчивается через " +
+                $"{Convert.ToDateTime(employee.EndContractDate.ToString()).Subtract(DateTime.Today).TotalDays} дней\n";
+        }
         public void AddEmployee(Employee employee)
         {
             employee.Validation();
-            _employees.Add(employee);
+            using var db = new BankContext();
+            if (!db.Passport.Any(p => p.Id == employee.PassportId))
+                throw new ArgumentNullException("Такого паспорта не было найденно");
+            if (db.Client.Any(p => p.PassportId == employee.PassportId)
+                || db.Employee.Any(p => p.PassportId == employee.PassportId))
+                throw new ArgumentException("Этот паспорт уже используется");
+            db.Employee.Add(employee);
+            db.SaveChanges();
         }
-        public void ChangeEmployee(int id, Employee employee)
+        public void ChangeEmployee(Employee employee)
         {
-            if(_employees.DataEmployees.Count() < id || id < 0)
-                throw new ArgumentOutOfRangeException("Такого работника по идентификатору не было найдено, т.к. вышло за пределы листа");
             employee.Validation();
-            if (_employees.DataEmployees[id].Passport != employee.Passport)
+            using var db = new BankContext();
+            if (!db.Employee.Any(e => e.Id == employee.Id))
                 throw new ArgumentException("Работник не совпадает с изменяемым работником");
-            _employees.Update(employee);
+            if (!db.Passport.Any(p => p.Id == employee.PassportId))
+                throw new ArgumentNullException("Такого паспорта не было найденно");
+            db.Employee.Update(employee);
+            db.SaveChanges();
+        }
+        public void DeleteEmployee(Employee employee)
+        {
+            using var db = new BankContext();
+            if (!db.Employee.Any(e => e.Id == employee.Id))
+                throw new ArgumentException("Работник не совпадает с удаляемым работником");
+            db.Employee.Remove(employee);
+            db.SaveChanges();
         }
     }
 }

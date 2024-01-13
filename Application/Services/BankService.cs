@@ -1,10 +1,10 @@
 ﻿using Models;
+using Models.Enums;
 
 namespace Services
 {
     public class BankService
     {
-        private List<Person> BlackList = new List<Person>();
         public Currency CalculationSalaryBetweenDirectors(
             int countDirectors,
             Currency bankProfit,
@@ -22,10 +22,17 @@ namespace Services
         public void AddToBlackList<T>(T person) where T : Person
         {
             if (IsPersonInBlackList(person)) return;
-            BlackList.Add(person);
+            person.InBlackList = true;
         }
-        public bool IsPersonInBlackList<T>(T person) where T : Person 
-            => BlackList.Contains(person);
-        public Employee ClientConversionEmployee(Client client) => (Employee)client;
+        public bool IsPersonInBlackList<T>(T person) where T : Person
+            => person.InBlackList;
+        public Employee ClientConversionEmployee(Client client)
+        {
+            var idSalary = new CurrencyService().AddCurrency(new Currency(0, CurrencyType.Dollar)).Id;
+            var dateTimeNow = DateTime.UtcNow;
+            var dateOnly = new DateOnly(dateTimeNow.Day, dateTimeNow.Month, dateTimeNow.Year);
+            var dateOnlyUpp1Year = dateOnly.AddYears(1);
+            return new Employee(client.PassportId, client.NumberPhone, client.Name, client.Age, JobPosition.Trainee, idSalary, dateOnly, dateOnlyUpp1Year);
+        }
     }
 }

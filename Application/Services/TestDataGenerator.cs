@@ -1,76 +1,104 @@
 ﻿using Bogus;
 using Models;
+using Models.Enums;
+using System.Linq;
 
 namespace Services
 {
     public class TestDataGenerator
     {
         private Faker _fakerRu = new Faker("ru");
-        public List<Client> GenerationClients(int count) 
-            => Enumerable
-                .Range(1, count)
-                .Select(_ => new Client(
-                    _fakerRu.Random.ReplaceNumbers("###-####-###"),
-                    new Passport(
-                        _fakerRu.Person.FirstName,
-                        _fakerRu.Person.LastName,
-                        null,
-                        (GenderType)_fakerRu.Person.Gender,
-                        _fakerRu.Date.BetweenDateOnly(
-                            new DateOnly(1980, 6, 20),
-                            new DateOnly(2004, 9, 12)),
-                        "город Тирасполь", "г. Тирасполь, УВД ПМР, д.24",
-                        _fakerRu.Date.BetweenDateOnly(
-                            new DateOnly(1980, 6, 20),
-                            new DateOnly(2004, 9, 12)),
-                        _fakerRu.Random.ReplaceNumbers("1-ПР №0#####"),
-                        _fakerRu.Person.Address.ToString())))
-                .ToList();
+        public List<Client> GenerationClients(int count)
+        {
+            ClientService clientService = new ClientService();
+            CurrencyService currencyService = new CurrencyService();
+            PassportService passportService = new PassportService();
+            List<Client> clients = new List<Client>();
+            for (int i = 0; i < count; i++)
+            {
+                var passport = GenerationPassport();
+                passportService.AddPassport(passport);
+                var person = new Models.Person(passport.Id, _fakerRu.Random.ReplaceNumbers("###-####-###"), passport.GetFullName(), passport.GetAge());
+                var currency = new Currency(_fakerRu.Random.Number(10, 5000), _fakerRu.PickRandom<CurrencyType>());
+                Client client = new Client(person.NumberPhone, person.PassportId, person.Name, person.Age);
+                clientService.AddClient(client);
+                clients.Add(client);
+                currency = currencyService.AddCurrency(currency);
+                clientService.AddAccount(new Account(client.Id, _fakerRu.Random.ReplaceNumbers("#### #### #### ####"), currency.Id));
+            }
+            return clients;
+        }
         public List<Employee> GenerationEmployees(int count)
-            => Enumerable.Range(1, count).Select(_ =>
-                new Employee(
-                    GenerationPassport(),
-                    _fakerRu.Random.ReplaceNumbers("###-####-###"),
-                    (JobPosition)_fakerRu.Random.Number(0, 3),
-                    new Currency(_fakerRu.Random.Number(120, 2500), CurrencyType.Dollar),
-                    _fakerRu.Date.BetweenDateOnly(new DateOnly(2003, 10, 5), new DateOnly(2024, 1, 3)),
-                    _fakerRu.Date.FutureDateOnly(3)))
-                    .ToList();
+        {
+            EmployeeService clientService = new EmployeeService();
+            CurrencyService currencyService = new CurrencyService();
+            PassportService passportService = new PassportService();
+            List<Employee> employees = new List<Employee>();
+            employees.Capacity = count;
+            for (int i = 0; i < count; i++)
+            {
+                var passport = GenerationPassport();
+                passportService.AddPassport(passport);
+                var person = new Models.Person(passport.Id, _fakerRu.Random.ReplaceNumbers("###-####-###"), passport.GetFullName(), passport.GetAge());
+                var currency = new Currency(_fakerRu.Random.Number(10, 5000), _fakerRu.PickRandom<CurrencyType>());
+                currency = currencyService.AddCurrency(currency);
+                Employee employee = new Employee(
+                        person.PassportId,
+                        person.NumberPhone,
+                        person.Name,
+                        person.Age,
+                        (JobPosition)_fakerRu.Random.Number(0, 3),
+                        currency.Id,
+                        _fakerRu.Date.BetweenDateOnly(new DateOnly(2003, 10, 5), new DateOnly(2024, 1, 3)),
+                        _fakerRu.Date.FutureDateOnly(3));
+                clientService.AddEmployee(employee);
+                employees.Add(employee);
+            }
+            return employees;
+        }
         public List<Account> GenerationAccounts(int count, Client? client = null)
-            => client is null 
-            ? Enumerable.Range(1, count).Select(_ =>
-                new Account(
-                    new Client(
-                        _fakerRu.Random.ReplaceNumbers("###-####-###"),
-                        GenerationPassport()),
-                    _fakerRu.Random.ReplaceNumbers("#### #### #### ####"),
-                    new Currency(
-                        _fakerRu.Random.Number(10, 5000),
-                        _fakerRu.PickRandom<CurrencyType>())))
-                    .ToList()
-            : Enumerable.Range(1, count).Select(_ =>
-                new Account(
-                    client,
-                    _fakerRu.Random.ReplaceNumbers("#### #### #### ####"),
-                    new Currency(
-                        _fakerRu.Random.Number(10, 5000),
-                        _fakerRu.PickRandom<CurrencyType>())))
-                    .ToList();
+        {
+            ClientService clientService = new ClientService();
+            CurrencyService currencyService = new CurrencyService();
+            PassportService passportService = new PassportService();
+            List<Account> accounts = new List<Account>();
+            accounts.Capacity = count;
+            if (client == null)
+            {
+                var passport = GenerationPassport();
+                passportService.AddPassport(passport);
+                client = new Client(_fakerRu.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
+                clientService.AddClient(client);
+            }
+            for (int i = 0; i < count; i++)
+            {
+                var currency = new Currency(_fakerRu.Random.Number(10, 5000), _fakerRu.PickRandom<CurrencyType>());
+                currency = currencyService.AddCurrency(currency);
+                var account = new Account(client.Id, _fakerRu.Random.ReplaceNumbers("#### #### #### ####"), currency.Id);
+                clientService.AddAccount(account);
+                accounts.Add(account);
+            }
+            return accounts;
+        }
         public Passport GenerationPassport()
-            => new Passport(
-                _fakerRu.Name.FirstName(),
-                _fakerRu.Name.LastName(),
+        {
+            var gender = (GenderType)_fakerRu.Person.Gender;
+            var city = _fakerRu.Person.Address.City;
+            return new Passport(
+                _fakerRu.Name.FirstName((Bogus.DataSets.Name.Gender?)gender),
+                _fakerRu.Name.LastName((Bogus.DataSets.Name.Gender?)gender),
                 null,
-                (GenderType)_fakerRu.Person.Gender,
+                gender,
                 _fakerRu.Date.BetweenDateOnly(
                     new DateOnly(1980, 6, 20),
                     new DateOnly(2004, 9, 12)),
-                "город Тирасполь", "г. Тирасполь, УВД ПМР, д.24",
+                "город " + city, "г. Тирасполь, УВД ПМР, д.24",
                 _fakerRu.Date.BetweenDateOnly(
-                    new DateOnly(1980, 6, 20),
-                    new DateOnly(2004, 9, 12)),
+                    new DateOnly(2005, 9, 2),
+                    new DateOnly(2024, 1, 13)),
                 _fakerRu.Random.ReplaceNumbers("1-ПР №0#####"),
-                _fakerRu.Person.Address.ToString());
+                string.Join(", ", "г." + city, _fakerRu.Person.Address.Street, _fakerRu.Person.Address.Suite));
+        }
         public Dictionary<string, Client> GenerationDictionaryPhone(int count)
         {
             var dictionaryPhoneClients = new Dictionary<string, Client>();
@@ -83,10 +111,10 @@ namespace Services
             var dictionaryAccount = new Dictionary<Client, List<Account>>();
             var accounts = GenerationAccounts(count);
             
-            accounts.ForEach(a => 
-                dictionaryAccount
-                    .Add(a.Client, 
-                        GenerationAccounts(_fakerRu.Random.Number(1, 4), a.Client)));
+            //accounts.ForEach(a => 
+            //    dictionaryAccount
+            //        .Add(a.Client, 
+            //            GenerationAccounts(_fakerRu.Random.Number(1, 4), a.Client)));
 
             return dictionaryAccount;
         }

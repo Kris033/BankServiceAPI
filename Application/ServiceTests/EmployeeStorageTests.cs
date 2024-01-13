@@ -3,6 +3,7 @@ using Services.Storage;
 using Models.Filters;
 using Xunit;
 using Models;
+using Models.Enums;
 
 namespace ServiceTests
 {
@@ -12,11 +13,15 @@ namespace ServiceTests
         public void AddEmployeeInStorageTest()
         {
             //Arrange
+            EmployeeService employeeService = new EmployeeService();
             IEmployeeStorage employees = new EmployeeStorage();
             TestDataGenerator dataGenerator = new TestDataGenerator();
+            GetFilterRequest filterRequest = new GetFilterRequest() { CountItem = 1 };
 
             //Act
-            var employee = dataGenerator.GenerationEmployees(1).First();
+            var employee = employeeService.GetEmployees(filterRequest).FirstOrDefault();
+            if (employee == null)
+                employee = dataGenerator.GenerationEmployees(1).First();
             employees.Add(employee);
 
             //Assert
@@ -26,12 +31,17 @@ namespace ServiceTests
         public void UpdateEmployeeInStorageTest()
         {
             //Arrange
+            EmployeeService employeeService = new EmployeeService();
             TestDataGenerator dataGenerator = new TestDataGenerator();
-            IEmployeeStorage employees = new EmployeeStorage(dataGenerator.GenerationEmployees(10));
+            IEmployeeStorage employees = new EmployeeStorage();
+            GetFilterRequest filterRequest = new GetFilterRequest() { CountItem = 1 };
 
             //Act
-            var employee = employees.DataEmployees.First();
-            employee.UpdateSalary(new Currency(1000, CurrencyType.Dollar));
+            var employee = employeeService.GetEmployees(filterRequest).FirstOrDefault();
+            if (employee == null)
+                employee = dataGenerator.GenerationEmployees(1).First();
+            employees.Add(employee);
+            employee.EndContractDate = employee.EndContractDate.AddYears(1);
             employees.Update(employee);
 
             //Assert
@@ -41,11 +51,16 @@ namespace ServiceTests
         public void DeleteEmployeeInStorageTest()
         {
             //Arrange
+            EmployeeService employeeService = new EmployeeService();
             TestDataGenerator dataGenerator = new TestDataGenerator();
-            IEmployeeStorage employees = new EmployeeStorage(dataGenerator.GenerationEmployees(10));
+            IEmployeeStorage employees = new EmployeeStorage();
+            GetFilterRequest filterRequest = new GetFilterRequest() { CountItem = 1 };
 
             //Act
-            var employee = employees.DataEmployees.First();
+            var employee = employeeService.GetEmployees(filterRequest).FirstOrDefault();
+            if (employee == null)
+                employee = dataGenerator.GenerationEmployees(1).First();
+            employees.Add(employee);
             employees.Delete(employee);
 
             //Assert
@@ -58,10 +73,10 @@ namespace ServiceTests
             EmployeeService employeeService = new EmployeeService();
 
             //Act
-            var employees = employeeService.GetEmployees(new GetFilterRequest() { DateBornFrom = new DateOnly(1996, 1, 1) });
+            List<Employee> employees = employeeService.GetEmployees(new GetFilterRequest() { DateBornFrom = new DateOnly(1996, 1, 1) });
 
             //Assert
-            Assert.DoesNotContain(employees, e => e.Passport!.DateBorn < new DateOnly(1995, 12, 31));
+            Assert.DoesNotContain(employees, e => e.Age > 28);
         }
     }
 }
