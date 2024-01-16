@@ -1,7 +1,9 @@
 ﻿using Bogus;
 using ExportTool;
 using Models;
+using Models.Requests;
 using Services;
+using Models.Enums;
 using Xunit;
 
 namespace ServiceTests
@@ -11,6 +13,7 @@ namespace ServiceTests
         [Fact]
         public void ImportWithThreadClientInDbTest()
         {
+            //Arrange
             ClientService clientService = new ClientService();
             Mutex mutex = new Mutex(); 
             Thread thread1 = new Thread(ImportClients);
@@ -52,7 +55,7 @@ namespace ServiceTests
         [Fact]
         public void ParallelPutCurrencyInAccount()
         {
-            //Arr
+            //Arrange
             Currency currency = new Currency(0, Models.Enums.CurrencyType.Dollar);
             Faker faker = new Faker();
             Mutex mutex = new Mutex();
@@ -88,6 +91,97 @@ namespace ServiceTests
                 }
                 mutex.ReleaseMutex();
             }
+        }
+        [Fact]
+        public void InterestRateCalculationTest()
+        {
+            //Arrange
+            RateUpdater rateUpdater = new RateUpdater();
+            ClientService clientService = new ClientService();
+            CurrencyService currencyService = new CurrencyService();
+
+            //Act
+            var client = clientService.GetClients().First();
+            var account = clientService.GetAccounts(client.Id).First();
+            var currencyAccount = currencyService.GetCurrency(account.CurrencyIdAmount);
+            rateUpdater.InterestRateCalculation();
+            var newInformationCurrencyAccount = currencyService.GetCurrency(account.CurrencyIdAmount);
+
+            //Assert
+            Assert.NotEqual(newInformationCurrencyAccount!.Value, currencyAccount!.Value);
+        }
+        [Fact]
+        public void CashDispanserTest()
+        {
+            //Arrange
+            Dictionary<Account, OperationAccountRequest> accountWithRequestOperation = new Dictionary<Account, OperationAccountRequest>();
+            List<Currency> accountsCurrencyBefore;
+            List<Currency> accountsCurrencyAfter;
+            ClientService clientService = new ClientService();
+            CurrencyService currencyService = new CurrencyService();
+            CashDispanserService cashDispanserService;
+            Faker faker = new Faker();
+
+            //Act
+            var client = clientService.GetClients().First();
+            var accounts = clientService.GetAccounts(client.Id);
+            accountsCurrencyBefore = accounts.Select(a => currencyService.GetCurrency(a.CurrencyIdAmount)!).ToList();
+            for (int i = 0; i < accounts.Count; i++)
+            {
+                var typeOperation = faker.PickRandom<TypeOperationAccount>();
+                Currency? currency = typeOperation switch 
+                {
+                    TypeOperationAccount.Put => new Currency(faker.Random.Number(1000), accountsCurrencyBefore[i].TypeCurrency),
+                    TypeOperationAccount.Withdraw => new Currency(faker.Random.Number(0, (int)accountsCurrencyBefore[i].Value), accountsCurrencyBefore[i].TypeCurrency),
+                    _ => null
+                };
+                accountWithRequestOperation.Add(accounts[i], new OperationAccountRequest(accounts[i].Id, typeOperation, currency));
+            }
+            cashDispanserService =
+                new CashDispanserService(accountWithRequestOperation);
+            var listResponse = cashDispanserService.CashingOutClients();
+            accountsCurrencyAfter = accounts.Select(a => currencyService.GetCurrency(a.CurrencyIdAmount)!).ToList();
+            foreach (var item in accountWithRequestOperation)
+            {
+                if (item.Value.OperationAccount == TypeOperationAccount.Withdraw 
+                    && accountsCurrencyBefore.First(c => c.Id == item.Key.CurrencyIdAmount).Value 
+                    < item.Value.Currency!.Value)
+                    continue;
+                switch (item.Value.OperationAccount)
+                {
+                    case TypeOperationAccount.Withdraw:
+                    case TypeOperationAccount.Put:
+                        //Assert
+                        Assert.NotEqual(
+                            accountsCurrencyBefore.First(c => c.Id == item.Key.CurrencyIdAmount).Value,
+                            accountsCurrencyAfter.First(c => c.Id == item.Key.CurrencyIdAmount).Value);
+                        break;
+                }
+            }
+        }
+        [Fact]
+        public void WorkThreadInBackgroundTest()
+        {
+            //Arrange
+            RateUpdater rateUpdater = new RateUpdater();
+
+            //Act
+            rateUpdater.CreateThread();
+
+            //Assert
+            Assert.True(rateUpdater.Thread!.IsAlive);
+        }
+        [Fact]
+        public void StopWorkThreadInBackgroundTest()
+        {
+            //Arrange
+            RateUpdater rateUpdater = new RateUpdater();
+
+            //Act
+            rateUpdater.ThreadAbort();
+
+            //Assert
+            Assert.Null(rateUpdater.Thread);
         }
     }
 }

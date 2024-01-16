@@ -1,9 +1,9 @@
 ﻿using Services;
 using Services.Storage;
-using Models.Filters;
 using Xunit;
 using Models;
 using Models.Enums;
+using Models.Requests;
 
 namespace ServiceTests
 {

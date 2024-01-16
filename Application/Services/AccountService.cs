@@ -30,14 +30,13 @@ namespace Services
             using var db = new BankContext();
             var account = db.Account.FirstOrDefault(a => a.Id == idAccount);
             var currencyAccount = db.Currency.FirstOrDefault(c => c.Id == account!.CurrencyIdAmount);
+            if (currency.TypeCurrency != currencyAccount!.TypeCurrency)
+                currency.ExChange(currencyAccount.TypeCurrency);
             var response = currencyAccount!.Validation(currency, true);
             if (response.IsSuccses == false)
                 account!.OnNotify(response.ErrorMessage!);
             else
             {
-                if (currency.TypeCurrency != currencyAccount!.TypeCurrency)
-                    currency.ExChange(currencyAccount.TypeCurrency);
-
                 currencyAccount.ChangeValue(currencyAccount.Value - currency.Value);
                 db.SaveChanges();
                 account!.OnPropertyChanged($"Вы сняли со счёта {currency.Value} {currency.TypeCurrency}.");

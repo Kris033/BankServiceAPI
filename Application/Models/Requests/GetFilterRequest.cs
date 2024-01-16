@@ -1,4 +1,4 @@
-﻿namespace Models.Filters
+﻿namespace Models.Requests
 {
     public class GetFilterRequest
     {

@@ -4,7 +4,7 @@ using Xunit;
 using Models.Enums;
 using Bogus;
 using Bogus.DataSets;
-using Models.Filters;
+using Models.Requests;
 
 namespace ServiceTests
 {
@@ -85,7 +85,7 @@ namespace ServiceTests
             passportService.AddPassport(passport);
             var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
             clientService.AddClient(client);
-            var amount = new Models.Currency(0, CurrencyType.LeiMD);
+            var amount = new Models.Currency(faker.Random.Number(15000), faker.PickRandom<CurrencyType>());
             currencyService.AddCurrency(amount);
             var account = new Account(client.Id, faker.Random.ReplaceNumbers("#### #### #### ####"), amount.Id);
             clientService.AddAccount(account);
