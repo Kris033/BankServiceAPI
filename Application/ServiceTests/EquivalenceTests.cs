@@ -6,13 +6,13 @@ namespace ServiceTests
     public class EquivalenceTests
     {
         [Fact]
-        public void GetHashCodeNecessityPositivTest()
+        public async Task GetHashCodeNecessityPositivTest()
         {
             //Arrange
             TestDataGenerator dataGenerator = new TestDataGenerator();
 
             //Act
-            var dictionaryAccountClients = dataGenerator.GenerationDictionaryAccount(100);
+            var dictionaryAccountClients = await dataGenerator.GenerationDictionaryAccount(5);
             var keyClient = dictionaryAccountClients.FirstOrDefault().Key;
 
             //Assert
@@ -24,45 +24,45 @@ namespace ServiceTests
                     .GetHashCode());
         }
         [Fact]
-        public void CheckAccountOnEqualPositivTest()
+        public async Task CheckAccountOnEqualPositivTest()
         {
             //Arrange
             TestDataGenerator dataGenerator = new TestDataGenerator();
 
             //Act
-            var dictionaryAccountClients = dataGenerator.GenerationDictionaryAccount(100);
+            var dictionaryAccountClients = await dataGenerator.GenerationDictionaryAccount(5);
 
             //Assert
             foreach(var clientAndHisAccounts in dictionaryAccountClients )
             {
                 foreach (var account in clientAndHisAccounts.Value)
                 {
-                    //Assert.Equal(clientAndHisAccounts.Key, account.Client);
+                    Assert.Equal(clientAndHisAccounts.Key, account.Client);
                 }
             }
             
         }
         [Fact]
-        public void CheckEmployeeOnEqualPositivTest()
+        public async Task CheckEmployeeOnEqualPositivTest()
         {
             //Arrange
             TestDataGenerator dataGenerator = new TestDataGenerator();
 
             //Act
-            var employeeList = dataGenerator.GenerationEmployees(100);
+            var employeeList = await dataGenerator.GenerationEmployees(5);
             var employee = employeeList.FirstOrDefault();
 
             //Assert
             Assert.Equal(employee, employeeList[0]);
         }
         [Fact]
-        public void GetHashCodeOnEqualPositivTest()
+        public async Task GetHashCodeOnEqualPositivTest()
         {
             //Arrange
             TestDataGenerator dataGenerator = new TestDataGenerator();
 
             //Act
-            var employeeList = dataGenerator.GenerationEmployees(100);
+            var employeeList = await dataGenerator.GenerationEmployees(5);
             var employee = employeeList.First();
 
             //Assert

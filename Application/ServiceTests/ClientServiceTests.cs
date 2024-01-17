@@ -3,7 +3,6 @@ using Models;
 using Xunit;
 using Models.Enums;
 using Bogus;
-using Bogus.DataSets;
 using Models.Requests;
 
 namespace ServiceTests
@@ -12,7 +11,7 @@ namespace ServiceTests
     {
         
         [Fact]
-        public void CreateClientInServiceThrowArgumentTest()
+        public async Task CreateClientInServiceThrowArgumentTest()
         {
             //Arrange
             ClientService clientService = new ClientService();
@@ -21,17 +20,17 @@ namespace ServiceTests
             Faker faker = new Faker();
 
             //Assert
-            Assert.Throws<ArgumentException>(() => 
+            await Assert.ThrowsAsync<ArgumentException>(async () => 
             {
                 //Act
                 var passport = dataGenerator.GenerationPassport();
-                passportService.AddPassport(passport);
+                await passportService.AddPassport(passport);
                 var client = new Client(faker.Random.ReplaceNumbers("###-##A#-###"), passport.Id, passport.GetFullName(), passport.GetAge());
-                clientService.AddClient(client);
+                await clientService.AddClient(client);
             });
         }
         [Fact]
-        public void CreateClientInServicePositiveTest()
+        public async Task CreateClientInServicePositiveTest()
         {
             //Arrange
             ClientService clientService = new ClientService();
@@ -42,15 +41,15 @@ namespace ServiceTests
 
             //Act
             var passport = dataGenerator.GenerationPassport();
-            passportService.AddPassport(passport);
+            await passportService.AddPassport(passport);
             var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
-            clientService.AddClient(client);
+            await clientService.AddClient(client);
 
             //Assert
-            Assert.NotNull(clientService.GetClient(client.Id));
+            Assert.NotNull(await clientService.GetClient(client.Id));
         }
         [Fact]
-        public void UpdateClientInServicePositiveTest()
+        public async Task UpdateClientInServicePositiveTest()
         {
             //Arrange
             ClientService clientService = new ClientService();
@@ -60,18 +59,19 @@ namespace ServiceTests
 
             //Act
             var passport = dataGenerator.GenerationPassport();
-            passportService.AddPassport(passport);
+            await passportService.AddPassport(passport);
             var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
-            clientService.AddClient(client);
+            await clientService.AddClient(client);
             string newNumberPhone = faker.Random.ReplaceNumbers("###-####-###");
             client.ChangeNumberPhone(newNumberPhone);
-            clientService.UpdateClient(client);
+            await clientService.UpdateClient(client);
+            var changedClient = await clientService.GetClient(client.Id);
 
             //Assert
-            Assert.True(clientService.GetClient(client.Id)?.NumberPhone == newNumberPhone);
+            Assert.True(changedClient?.NumberPhone == newNumberPhone);
         }
         [Fact]
-        public void CreateAccountClientInServicePositiveTest()
+        public async Task CreateAccountClientInServicePositiveTest()
         {
             //Arrange
             ClientService clientService = new ClientService();
@@ -82,19 +82,19 @@ namespace ServiceTests
 
             //Act
             var passport = dataGenerator.GenerationPassport();
-            passportService.AddPassport(passport);
+            await passportService.AddPassport(passport);
             var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
-            clientService.AddClient(client);
+            await clientService.AddClient(client);
             var amount = new Models.Currency(faker.Random.Number(15000), faker.PickRandom<CurrencyType>());
-            currencyService.AddCurrency(amount);
+            await currencyService.AddCurrency(amount);
             var account = new Account(client.Id, faker.Random.ReplaceNumbers("#### #### #### ####"), amount.Id);
-            clientService.AddAccount(account);
+            await clientService.AddAccount(account);
 
             //Assert
-            Assert.NotNull(clientService.GetAccount(account.Id));
+            Assert.NotNull(await clientService.GetAccount(account.Id));
         }
         [Fact]
-        public void DeleteClientInServicePositiveTest()
+        public async Task DeleteClientInServicePositiveTest()
         {
             //Arrange
             ClientService clientService = new ClientService();
@@ -105,16 +105,16 @@ namespace ServiceTests
 
             //Act
             var passport = dataGenerator.GenerationPassport();
-            passportService.AddPassport(passport);
+            await passportService.AddPassport(passport);
             var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
-            clientService.AddClient(client);
-            clientService.DeleteClient(client.Id);
+            await clientService.AddClient(client);
+            await clientService.DeleteClient(client.Id);
 
             //Assert
-            Assert.Null(clientService.GetClient(client.Id));
+            Assert.Null(await clientService.GetClient(client.Id));
         }
         [Fact]
-        public void CreateAccountClientInServiceThrowArgumentTest()
+        public async Task CreateAccountClientInServiceThrowArgumentTest()
         {
             //Arrange
             ClientService clientService = new ClientService();
@@ -124,21 +124,21 @@ namespace ServiceTests
             Faker faker = new Faker();
 
             //Assert
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
                 //Act
                 var passport = dataGenerator.GenerationPassport();
-                passportService.AddPassport(passport);
+                await passportService.AddPassport(passport);
                 var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
-                clientService.AddClient(client);
+                await clientService.AddClient(client);
                 var amount = new Models.Currency(0, CurrencyType.LeiMD);
-                currencyService.AddCurrency(amount);
+                await currencyService.AddCurrency(amount);
                 var account = new Account(client.Id, faker.Random.ReplaceNumbers("###! #### #### ####"), amount.Id);
-                clientService.AddAccount(account);
+                await clientService.AddAccount(account);
             });
         }
         [Fact]
-        public void UpdateAccountPositiveTest()
+        public async Task UpdateAccountPositiveTest()
         {
             //Arrange
             ClientService clientService = new ClientService();
@@ -149,22 +149,23 @@ namespace ServiceTests
 
             //Act
             var passport = dataGenerator.GenerationPassport();
-            passportService.AddPassport(passport);
+            await passportService.AddPassport(passport);
             var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
-            clientService.AddClient(client);
+            await clientService.AddClient(client);
             var amount = new Models.Currency(0, CurrencyType.LeiMD);
-            currencyService.AddCurrency(amount);
+            await currencyService.AddCurrency(amount);
             var account = new Account(client.Id, faker.Random.ReplaceNumbers("#### #### #### ####"), amount.Id);
-            clientService.AddAccount(account);
+            await clientService.AddAccount(account);
             var newAccount = new Account(client.Id, faker.Random.ReplaceNumbers("#### #### #### ####"), amount.Id);
             newAccount.Id = account.Id;
-            clientService.ChangeAccountClient(newAccount);
+            await clientService.ChangeAccountClient(newAccount);
+            var changedAccount = await clientService.GetAccount(newAccount.Id);
 
             //Assert
-            Assert.True(clientService.GetAccount(newAccount.Id)?.AccountNumber != account.AccountNumber);
+            Assert.True(changedAccount?.AccountNumber != account.AccountNumber);
         }
         [Fact]
-        public void UpdateAccountThrowTest()
+        public async Task UpdateAccountThrowTest()
         {
             //Arrange
             ClientService clientService = new ClientService();
@@ -174,24 +175,23 @@ namespace ServiceTests
             Faker faker = new Faker();
 
             //Assert
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
                 //Act
                 var passport = dataGenerator.GenerationPassport();
-                passportService.AddPassport(passport);
+                await passportService.AddPassport(passport);
                 var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
-                clientService.AddClient(client);
+                await clientService.AddClient(client);
                 var amount = new Models.Currency(0, CurrencyType.LeiMD);
-                currencyService.AddCurrency(amount);
+                await currencyService.AddCurrency(amount);
                 var account = new Account(client.Id, faker.Random.ReplaceNumbers("#### #### #### ####"), amount.Id);
-                clientService.AddAccount(account);
+                await clientService.AddAccount(account);
                 var newAccount = new Account(client.Id, faker.Random.ReplaceNumbers("#### #### #### ###o"), amount.Id);
-                clientService.ChangeAccountClient(newAccount);
+                await clientService.ChangeAccountClient(newAccount);
             });
-
         }
         [Fact]
-        public void DeleteAccountClientInServiceThrowArgumentTest()
+        public async Task DeleteAccountClientInServiceThrowArgumentTest()
         {
             //Arrange
             ClientService clientService = new ClientService();
@@ -202,26 +202,26 @@ namespace ServiceTests
 
             //Act
             var passport = dataGenerator.GenerationPassport();
-            passportService.AddPassport(passport);
+            await passportService.AddPassport(passport);
             var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
-            clientService.AddClient(client);
+            await clientService.AddClient(client);
             var amount = new Models.Currency(0, CurrencyType.LeiMD);
-            currencyService.AddCurrency(amount);
+            await currencyService.AddCurrency(amount);
             var account = new Account(client.Id, faker.Random.ReplaceNumbers("#### #### #### ####"), amount.Id);
-            clientService.AddAccount(account);
-            clientService.DeleteAccountClient(account.Id);
+            await clientService.AddAccount(account);
+            await clientService.DeleteAccountClient(account.Id);
 
             //Assert
-            Assert.Null(clientService.GetAccount(account.Id));
+            Assert.Null(await clientService.GetAccount(account.Id));
         }
         [Fact]
-        public void FilterGetClientsFromStorageTest()
+        public async Task FilterGetClientsFromStorageTest()
         {
             //Arrange
             ClientService clientService = new ClientService();
 
             //Act
-            var clients = clientService.GetClients(new GetFilterRequest() { CountItem = 1 });
+            var clients = await clientService.GetClients(new GetFilterRequest() { CountItem = 1 });
 
             //Assert
             Assert.True(clients.Count == 1);

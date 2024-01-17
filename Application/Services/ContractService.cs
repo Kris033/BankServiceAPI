@@ -1,26 +1,26 @@
 ﻿using Models;
 using BankDbConnection;
-using Bogus.DataSets;
+using Microsoft.EntityFrameworkCore;
 
 namespace Services
 {
     public class ContractService
     {
-        public Contract? GetContract(Guid employeeGuid)
+        public async Task<Contract?> GetContract(Guid employeeGuid)
         {
             using var db = new BankContext();
-            return db.Contract.FirstOrDefault(c => c.EmployeeId == employeeGuid);
+            return await db.Contract.FirstOrDefaultAsync(c => c.EmployeeId == employeeGuid);
         }
-        public void SetContract(Guid idContract)
+        public async Task SetContract(Guid idContract)
         {
             using var db = new BankContext();
-            var contract = db.Contract.FirstOrDefault(c => c.Id == idContract);
+            var contract = await db.Contract.FirstOrDefaultAsync(c => c.Id == idContract);
             if (contract != null)
             {
-                var employee = db.Employee.FirstOrDefault(e => e.Id == contract.EmployeeId);
+                var employee = await db.Employee.FirstOrDefaultAsync(e => e.Id == contract.EmployeeId);
                 if (employee != null)
                 {
-                    var salary = db.Currency.FirstOrDefault(c => c.Id == employee!.CurrencyIdSalary);
+                    var salary = await db.Currency.FirstOrDefaultAsync(c => c.Id == employee!.CurrencyIdSalary);
                     if(salary != null)
                     {
                         contract.MainContract = $"{contract.NameCompany}\n" +
@@ -38,38 +38,38 @@ namespace Services
                         "Подписи сторон:\n\n" +
                         "Работодатель: _______________________\n\n" +
                         "Сотрудник: _______________________\n\n";
-                        db.SaveChanges();
+                        await db.SaveChangesAsync();
                     }
                 }
             }
         }
-        public void AddContract(Contract contract)
+        public async Task AddContract(Contract contract)
         {
             using var db = new BankContext();
-            if (db.Contract.Any(c => c.EmployeeId == contract.EmployeeId))
+            if (await db.Contract.AnyAsync(c => c.EmployeeId == contract.EmployeeId))
                 throw new ArgumentException("Работник уже имеет контракт");
             db.Contract.Add(contract);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
-        public void UpdateContract(Contract contract)
+        public async Task UpdateContract(Contract contract)
         {
             using var db = new BankContext();
-            if(!db.Contract.Any(c => c.EmployeeId == contract.EmployeeId))
+            if(!await db.Contract.AnyAsync(c => c.EmployeeId == contract.EmployeeId))
                 throw new ArgumentNullException("Идентификатор работника не совпадает с изменяемым работником");
-            if(!db.Contract.Any(c => c.Id == contract.Id))
+            if(!await db.Contract.AnyAsync(c => c.Id == contract.Id))
                 throw new ArgumentNullException("Идентификатор контракта не совпадает с изменяемым контрактом");
             db.Contract.Update(contract);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             
         }
-        public void DeleteContract(Guid employeeGuid)
+        public async Task DeleteContract(Guid employeeGuid)
         {
             using var db = new BankContext();
-            var contract = db.Contract.FirstOrDefault(c => c.EmployeeId == employeeGuid);
+            var contract = await db.Contract.FirstOrDefaultAsync(c => c.EmployeeId == employeeGuid);
             if(contract != null)
             {
                 db.Contract.Remove(contract);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
         }
     }

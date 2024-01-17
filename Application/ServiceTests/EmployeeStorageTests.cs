@@ -10,7 +10,7 @@ namespace ServiceTests
     public class EmployeeStorageTests
     {
         [Fact]
-        public void AddEmployeeInStorageTest()
+        public async Task AddEmployeeInStorageTest()
         {
             //Arrange
             EmployeeService employeeService = new EmployeeService();
@@ -19,16 +19,20 @@ namespace ServiceTests
             GetFilterRequest filterRequest = new GetFilterRequest() { CountItem = 1 };
 
             //Act
-            var employee = employeeService.GetEmployees(filterRequest).FirstOrDefault();
+            var listEmployee = await employeeService.GetEmployees(filterRequest);
+            var employee = listEmployee.FirstOrDefault();
             if (employee == null)
-                employee = dataGenerator.GenerationEmployees(1).First();
+            {
+                listEmployee = await dataGenerator.GenerationEmployees(1);
+                employee = listEmployee.First();
+            }
             employees.Add(employee);
 
             //Assert
             Assert.Contains(employee, employees.DataEmployees);
         }
         [Fact]
-        public void UpdateEmployeeInStorageTest()
+        public async Task UpdateEmployeeInStorageTest()
         {
             //Arrange
             EmployeeService employeeService = new EmployeeService();
@@ -37,9 +41,13 @@ namespace ServiceTests
             GetFilterRequest filterRequest = new GetFilterRequest() { CountItem = 1 };
 
             //Act
-            var employee = employeeService.GetEmployees(filterRequest).FirstOrDefault();
+            var listEmployee = await employeeService.GetEmployees(filterRequest);
+            var employee = listEmployee.FirstOrDefault();
             if (employee == null)
-                employee = dataGenerator.GenerationEmployees(1).First();
+            {
+                listEmployee = await dataGenerator.GenerationEmployees(1);
+                employee = listEmployee.First();
+            }
             employees.Add(employee);
             employee.EndContractDate = employee.EndContractDate.AddYears(1);
             employees.Update(employee);
@@ -48,7 +56,7 @@ namespace ServiceTests
             Assert.Contains(employee, employees.DataEmployees);
         }
         [Fact]
-        public void DeleteEmployeeInStorageTest()
+        public async Task DeleteEmployeeInStorageTest()
         {
             //Arrange
             EmployeeService employeeService = new EmployeeService();
@@ -57,9 +65,13 @@ namespace ServiceTests
             GetFilterRequest filterRequest = new GetFilterRequest() { CountItem = 1 };
 
             //Act
-            var employee = employeeService.GetEmployees(filterRequest).FirstOrDefault();
+            var listEmployee = await employeeService.GetEmployees(filterRequest);
+            var employee = listEmployee.FirstOrDefault();
             if (employee == null)
-                employee = dataGenerator.GenerationEmployees(1).First();
+            {
+                listEmployee = await dataGenerator.GenerationEmployees(1);
+                employee = listEmployee.First();
+            }
             employees.Add(employee);
             employees.Delete(employee);
 
@@ -67,13 +79,13 @@ namespace ServiceTests
             Assert.DoesNotContain(employee, employees.DataEmployees);
         }
         [Fact]
-        public void FilterSearchStorageTest()
+        public async Task FilterSearchStorageTest()
         {
             //Arrange
             EmployeeService employeeService = new EmployeeService();
 
             //Act
-            List<Employee> employees = employeeService.GetEmployees(new GetFilterRequest() { DateBornFrom = new DateOnly(1996, 1, 1) });
+            List<Employee> employees = await employeeService.GetEmployees(new GetFilterRequest() { DateBornFrom = new DateOnly(1996, 1, 1) });
 
             //Assert
             Assert.DoesNotContain(employees, e => e.Age > 28);

@@ -3,28 +3,26 @@ using Services.Storage;
 using Models.Validations;
 using BankDbConnection;
 using Models.Requests;
+using Microsoft.EntityFrameworkCore;
 
 namespace Services
 {
     public class EmployeeService
     {
         private readonly IEmployeeStorage _employees = new EmployeeStorage();
-        private BankContext _bankContext;
-        public EmployeeService() 
-        {
-            _bankContext = new BankContext();
-        }
+        public EmployeeService() { }
         public Employee GetFirstEmployee() => _employees.DataEmployees.First();
-        public List<Employee> GetEmployees(GetFilterRequest? filterRequest = null)
+        public async Task<List<Employee>> GetEmployees(GetFilterRequest? filterRequest = null)
         {
-            var employees = _bankContext.Employee.AsQueryable();
+            using var db = new BankContext();
+            var employees = db.Employee.AsQueryable();
             if (filterRequest != null)
             {
                 var passportService = new PassportService();
                 List<Passport> passportList = new List<Passport>();
-                employees.ToList().ForEach(c =>
+                await employees.ForEachAsync(c =>
                 {
-                    var passport = passportService.GetPassport(c.PassportId);
+                    var passport = passportService.GetPassport(c.PassportId).Result;
                     if (passport != null) passportList.Add(passport);
                 });
                 var passports = passportList.AsQueryable();
@@ -51,36 +49,46 @@ namespace Services
                     passports = passports
                         .Where(p => p!
                             .DateBorn <= filterRequest.DateBornTo);
-                passportList = passports.ToList();
-                var employeeList = employees.ToList();
+                passportList = await passports.ToListAsync();
+                var employeeList = await employees.ToListAsync();
                 if (passportList.Count > 0)
                     employeeList = employeeList.Where(c => passportList.Any(p => c.PassportId == p.Id)).ToList();
                 if (filterRequest.CountItem != null && filterRequest.CountItem > 0 && filterRequest.CountItem < employeeList.Count())
                     employeeList = employeeList.Take((int)filterRequest.CountItem).ToList();
                 return employeeList.ToList();
             }
-            return employees.ToList();
+            return await employees.ToListAsync();
         }
-        public Employee GetYoungestEmployee() 
-            => _bankContext.Employee
-                .First(e => e
-                    .Age == _bankContext.Employee
-                        .Min(ea => ea.Age));
-        public Employee GetOldestEmployee()
-            => _bankContext.Employee
-                .First(e => e
-                    .Age == _bankContext.Employee
-                        .Max(ea => ea.Age));
-        public int GetAverrageAgeEmployees() 
-            => _bankContext.Employee.Any() == false 
-            ? _bankContext.Employee.Sum(e => e.Age) / _bankContext.Employee.Count()
-            : 0;
-        public Employee? GetEmployee(Guid idEmployee)
-            => _bankContext.Employee.FirstOrDefault(e => e.Id == idEmployee);
-        public string GetSalary(Guid idSalaryCurrency)
+        public async Task<Employee> GetYoungestEmployee()
         {
             using var db = new BankContext();
-            var salary = db.Currency.FirstOrDefault(c => c.Id == idSalaryCurrency);
+            int minAgeEmployee = await db.Employee.MinAsync(e => e.Age);
+            return await db.Employee.FirstAsync(e => e.Age == minAgeEmployee);
+        }
+        public async Task<Employee> GetOldestEmployee()
+        {
+            using var db = new BankContext();
+            int maxAgeEmployee = await db.Employee.MaxAsync(e => e.Age);
+            return await db.Employee.FirstAsync(e => e.Age == maxAgeEmployee);
+        }
+        public async Task<int> GetAverrageAgeEmployees()
+        {
+            using var db = new BankContext();
+            return await db.Employee.AnyAsync() == false
+            ? await db.Employee.SumAsync(e => e.Age)
+            / await db.Employee.CountAsync()
+            : 0;
+        }
+        public async Task<Employee?> GetEmployee(Guid idEmployee)
+        {
+            using var db = new BankContext();
+            return await db.Employee.FirstOrDefaultAsync(e => e.Id == idEmployee);
+        }
+           
+        public async Task<string> GetSalary(Guid idSalaryCurrency)
+        {
+            using var db = new BankContext();
+            var salary = await db.Currency.FirstOrDefaultAsync(c => c.Id == idSalaryCurrency);
             return salary is null 
                 ? "Информация отсутствует" 
                 : $"{salary.Value} {salary.TypeCurrency}";
@@ -96,36 +104,36 @@ namespace Services
                 $"Контракт заканчивается через " +
                 $"{Convert.ToDateTime(employee.EndContractDate.ToString()).Subtract(DateTime.Today).TotalDays} дней\n";
         }
-        public void AddEmployee(Employee employee)
+        public async Task AddEmployee(Employee employee)
         {
             employee.Validation();
             using var db = new BankContext();
-            if (!db.Passport.Any(p => p.Id == employee.PassportId))
+            if (!await db.Passport.AnyAsync(p => p.Id == employee.PassportId))
                 throw new ArgumentNullException("Такого паспорта не было найденно");
-            if (db.Client.Any(p => p.PassportId == employee.PassportId)
-                || db.Employee.Any(p => p.PassportId == employee.PassportId))
+            if (await db.Client.AnyAsync(p => p.PassportId == employee.PassportId)
+                || await db.Employee.AnyAsync(p => p.PassportId == employee.PassportId))
                 throw new ArgumentException("Этот паспорт уже используется");
             db.Employee.Add(employee);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
-        public void ChangeEmployee(Employee employee)
+        public async Task ChangeEmployee(Employee employee)
         {
             employee.Validation();
             using var db = new BankContext();
-            if (!db.Employee.Any(e => e.Id == employee.Id))
+            if (!await db.Employee.AnyAsync(e => e.Id == employee.Id))
                 throw new ArgumentException("Работник не совпадает с изменяемым работником");
-            if (!db.Passport.Any(p => p.Id == employee.PassportId))
+            if (!await db.Passport.AnyAsync(p => p.Id == employee.PassportId))
                 throw new ArgumentNullException("Такого паспорта не было найденно");
             db.Employee.Update(employee);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
-        public void DeleteEmployee(Employee employee)
+        public async Task DeleteEmployee(Employee employee)
         {
             using var db = new BankContext();
-            if (!db.Employee.Any(e => e.Id == employee.Id))
+            if (!await db.Employee.AnyAsync(e => e.Id == employee.Id))
                 throw new ArgumentException("Работник не совпадает с удаляемым работником");
             db.Employee.Remove(employee);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
     }
 }

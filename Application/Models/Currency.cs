@@ -55,6 +55,10 @@ namespace Models
         }
         public void ChangeValue(decimal valueNow)
             => Value = Math.Round(valueNow, 2);
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
             if (obj == null || obj is not Currency)
@@ -64,8 +68,9 @@ namespace Models
                 currency.TypeCurrency == currency.TypeCurrency &&
                 currency.Value == currency.Value;
         }
-        public int CompareTo(Currency currency)
+        public int CompareTo(Currency? currency)
         {
+            if (currency == null) return -1;
             if (currency.TypeCurrency != TypeCurrency)
                 return TypeCurrency.CompareTo(currency.TypeCurrency);
             return Convert.ToInt32(Value - currency.Value);

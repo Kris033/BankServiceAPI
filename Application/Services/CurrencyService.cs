@@ -1,46 +1,46 @@
 ﻿using BankDbConnection;
 using Models.Validations;
 using Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Services
 {
     public class CurrencyService
     {
-        public Currency? GetCurrency(Guid id)
+        public async Task<Currency?> GetCurrency(Guid id)
         {
             using var db = new BankContext();
-            return db.Currency.FirstOrDefault(c => c.Id == id);
+            return await db.Currency.FirstOrDefaultAsync(c => c.Id == id);
         }
-        public Currency? GetCurrency(Currency currency)
+        public async Task<Currency?> GetCurrency(Currency currency)
         {
             using var db = new BankContext();
-            return db.Currency.Find(currency.Id);
+            return await db.Currency.FindAsync(currency.Id);
         }
-        public Currency AddCurrency(Currency currency)
+        public async Task AddCurrency(Currency currency)
         {
             currency.Validation();
             using var db = new BankContext();
             db.Currency.Add(currency);
-            db.SaveChanges();
-            return GetCurrency(currency)!;
+            await db.SaveChangesAsync();
         }
-        public void UpdateCurrency(Currency currency)
+        public async Task UpdateCurrency(Currency currency)
         {
             currency.Validation();
             using var db = new BankContext();
-            if(!db.Currency.Any(c => c.Id == currency.Id))
+            if(!await db.Currency.AnyAsync(c => c.Id == currency.Id))
                 throw new ArgumentNullException("Идентификатор изменяемой валюты, не был найден");
             db.Currency.Update(currency);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
-        public void DeleteCurrency(Guid guid)
+        public async Task DeleteCurrency(Guid guid)
         {
             using var db = new BankContext();
             var currency = 
-                db.Currency.FirstOrDefault(c => c.Id == guid) 
+                await db.Currency.FirstOrDefaultAsync(c => c.Id == guid) 
                 ?? throw new ArgumentNullException("Идентификатор удаляемой валюты, не был найден");
             db.Currency.Remove(currency);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
     }
 }

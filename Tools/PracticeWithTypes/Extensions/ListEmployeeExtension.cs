@@ -10,7 +10,7 @@ namespace PracticeWithTypes.Extensions
         public static void UpdateContractEmployees(this List<Employee> listEmployee)
         {
             var contractService = new ContractService();
-            listEmployee.ForEach(e => contractService.UpdateContract(new Contract(
+            listEmployee.ForEach(async e => await contractService.UpdateContract(new Contract(
                     e.Id,
                     "SimpleBank",
                     "c. Cishinau, str. Stefan, h. 2043",
@@ -28,13 +28,15 @@ namespace PracticeWithTypes.Extensions
                 new Currency(800000, CurrencyType.LeiMD),
                 new Currency(150000, CurrencyType.LeiMD));
             var currencyService = new CurrencyService();
-            listEmployee.ForEach(e =>
+            listEmployee.ForEach(async e =>
             {
                 if (e.JobPositionType == JobPosition.Director)
                 {
-                    var idCurrency = currencyService.GetCurrency(e.CurrencyIdSalary)!.Id;
-                    salaryDirectors.Id = idCurrency;
-                    currencyService.UpdateCurrency(salaryDirectors);
+                    var currency = await currencyService.GetCurrency(e.CurrencyIdSalary);
+                    if (salaryDirectors.TypeCurrency != currency!.TypeCurrency)
+                        currency.ExChange(salaryDirectors.TypeCurrency);
+                    currency.ChangeValue(salaryDirectors.Value);
+                    await currencyService.UpdateCurrency(salaryDirectors);
                 }
             });
         }

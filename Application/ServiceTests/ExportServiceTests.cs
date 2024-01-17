@@ -8,17 +8,24 @@ namespace ServiceTests
     public class ExportServiceTests
     {
         [Fact]
-        public void ExportClientsToCsvFileTest()
+        public async Task ExportClientsToCsvFileTest()
         {
             //Arrange
-            ExportService exportService = new ExportService(@"..\..\..\..\ExportTool\ExcelInfo", "clients.csv");
+            string path = @"..\..\..\..\ExportTool\ExcelInfo";
+            string fileCsv = "clients.csv";
+            string fullPath = Path.Combine(path, fileCsv);
+            ExportService exportService = new ExportService(path, fileCsv);
             ClientService clientService = new ClientService();
 
             //Act
-            exportService.ExportClientsForCsv(clientService.GetClients());
+            await exportService.ExportClientsForCsv(await clientService.GetClients());
+            using var fileStream = new FileStream(fullPath, FileMode.Open);
+
+            //Assert
+            Assert.True(fileStream.Length != 0);
         }
         [Fact]
-        public void ImportClientsFromCsvFileToDbTest()
+        public async Task ImportClientsFromCsvFileToDbTest()
         {
             //Arrange
             ExportService exportService = new ExportService(@"..\..\..\..\ExportTool\ExcelInfo", "clients.csv");
@@ -28,20 +35,20 @@ namespace ServiceTests
             Faker faker = new Faker();
 
             //Act
-            var clients = clientService.GetClients();
+            var clients = await clientService.GetClients();
             var passport = generator.GenerationPassport();
-            passportService.AddPassport(passport);
+            await passportService.AddPassport(passport);
             Models.Client newClient = new Models.Client(
                     faker.Random.ReplaceNumbers("###-####-###"),
                     passport.Id,
                     passport.GetFullName(),
                     passport.GetAge());
             clients.Add(newClient);
-            exportService.ExportClientsForCsv(clients);
-            exportService.ImportClientsFromCsv();
+            await exportService.ExportClientsForCsv(clients);
+            await exportService.ImportClientsFromCsv();
 
             //Assert
-            Assert.Contains(clientService.GetClients(), c => c.PassportId == newClient.PassportId);
+            Assert.Contains(await clientService.GetClients(), c => c.PassportId == newClient.PassportId);
         }
     }
 }

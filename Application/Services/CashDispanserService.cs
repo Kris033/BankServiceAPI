@@ -1,4 +1,5 @@
 ﻿using BankDbConnection;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Enums;
 using Models.Requests;
@@ -14,7 +15,7 @@ namespace Services
         {
             DictionaryAccountWithOperation = dictionaryAccountWithOperation;
         }
-        public List<GetAccountResponse> CashingOutClients()
+        public async Task<List<GetAccountResponse>> CashingOutClients()
         {
             AccountService accountService = new AccountService();
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -24,26 +25,26 @@ namespace Services
             {
                 Task task = item.Value.OperationAccount switch
                 {
-                    TypeOperationAccount.Put => new Task(() =>
+                    TypeOperationAccount.Put => new Task(async () =>
                     {
                         if (item.Value.Currency == null)
                             cancellationTokenSource.Cancel();
                         if (cancellationToken.IsCancellationRequested)
                             return;
-                        accountService.Put(item.Key.Id, item.Value.Currency!);
+                        await accountService.Put(item.Key.Id, item.Value.Currency!);
                     }, cancellationToken),
-                    TypeOperationAccount.Withdraw => new Task(() =>
+                    TypeOperationAccount.Withdraw => new Task(async () =>
                     {
                         if (item.Value.Currency == null)
                             cancellationTokenSource.Cancel();
                         if (cancellationToken.IsCancellationRequested)
                             return;
-                        accountService.Remove(item.Key.Id, item.Value.Currency!);
+                        await accountService.Remove(item.Key.Id, item.Value.Currency!);
                     }, cancellationToken),
-                    TypeOperationAccount.CheckBalance => new Task(() =>
+                    TypeOperationAccount.CheckBalance => new Task(async () =>
                     {
                         using var db = new BankContext();
-                        var currencyAccount = db.Currency.FirstOrDefault(c => c.Id == item.Key.CurrencyIdAmount);
+                        var currencyAccount = await db.Currency.FirstOrDefaultAsync(c => c.Id == item.Key.CurrencyIdAmount);
                         if (currencyAccount == null)
                             cancellationTokenSource.Cancel();
                         if (cancellationToken.IsCancellationRequested)
@@ -53,7 +54,7 @@ namespace Services
                     _ => new Task(() => { })
                 };
                 task.Start();
-                task.Wait();
+                await task.WaitAsync(cancellationToken);
             }
             return accountsResponses;
         }

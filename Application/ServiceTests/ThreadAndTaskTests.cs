@@ -33,22 +33,22 @@ namespace ServiceTests
                 }
                 Thread.Sleep(500);
             }
-            void ImportClients()
+            async void ImportClients()
             {
                 Thread.Sleep(100);
                 mutex.WaitOne();
                 ExportService exportService = new ExportService(@"..\..\..\..\ExportTool\ExcelInfo", "clients.csv");
                 
-                exportService.ImportClientsFromCsv();
+                await exportService.ImportClientsFromCsv();
                 mutex.ReleaseMutex();
             }
-            void ExportClients()
+            async void ExportClients()
             {
                 Thread.Sleep(90);
                 mutex.WaitOne();
                 ExportService exportService = new ExportService(@"..\..\..\..\ExportTool\ExcelInfo", "clientsFromDb.csv");
                 
-                exportService.ExportClientsForCsv(clientService.GetClients());
+                await exportService.ExportClientsForCsv(await clientService.GetClients());
                 mutex.ReleaseMutex();
             }
         }
@@ -93,7 +93,7 @@ namespace ServiceTests
             }
         }
         [Fact]
-        public void InterestRateCalculationTest()
+        public async void InterestRateCalculationTest()
         {
             //Arrange
             RateUpdater rateUpdater = new RateUpdater();
@@ -101,17 +101,19 @@ namespace ServiceTests
             CurrencyService currencyService = new CurrencyService();
 
             //Act
-            var client = clientService.GetClients().First();
-            var account = clientService.GetAccounts(client.Id).First();
-            var currencyAccount = currencyService.GetCurrency(account.CurrencyIdAmount);
-            rateUpdater.InterestRateCalculation();
-            var newInformationCurrencyAccount = currencyService.GetCurrency(account.CurrencyIdAmount);
+            var clients = await clientService.GetClients();
+            var client = clients.First();
+            var accounts = await clientService.GetAccounts(client.Id);
+            var account = accounts.First();
+            var currencyAccount = await currencyService.GetCurrency(account.CurrencyIdAmount);
+            await rateUpdater.InterestRateCalculation();
+            var newInformationCurrencyAccount = await currencyService.GetCurrency(account.CurrencyIdAmount);
 
             //Assert
             Assert.NotEqual(newInformationCurrencyAccount!.Value, currencyAccount!.Value);
         }
         [Fact]
-        public void CashDispanserTest()
+        public async void CashDispanserTest()
         {
             //Arrange
             Dictionary<Account, OperationAccountRequest> accountWithRequestOperation = new Dictionary<Account, OperationAccountRequest>();
@@ -123,9 +125,10 @@ namespace ServiceTests
             Faker faker = new Faker();
 
             //Act
-            var client = clientService.GetClients().First();
-            var accounts = clientService.GetAccounts(client.Id);
-            accountsCurrencyBefore = accounts.Select(a => currencyService.GetCurrency(a.CurrencyIdAmount)!).ToList();
+            var clients = await clientService.GetClients();
+            var client = clients.First();
+            var accounts = await clientService.GetAccounts(client.Id);
+            accountsCurrencyBefore = await GetListCurrency(accounts);
             for (int i = 0; i < accounts.Count; i++)
             {
                 var typeOperation = faker.PickRandom<TypeOperationAccount>();
@@ -140,7 +143,7 @@ namespace ServiceTests
             cashDispanserService =
                 new CashDispanserService(accountWithRequestOperation);
             var listResponse = cashDispanserService.CashingOutClients();
-            accountsCurrencyAfter = accounts.Select(a => currencyService.GetCurrency(a.CurrencyIdAmount)!).ToList();
+            accountsCurrencyAfter = await GetListCurrency(accounts);
             foreach (var item in accountWithRequestOperation)
             {
                 if (item.Value.OperationAccount == TypeOperationAccount.Withdraw 
@@ -157,6 +160,15 @@ namespace ServiceTests
                             accountsCurrencyAfter.First(c => c.Id == item.Key.CurrencyIdAmount).Value);
                         break;
                 }
+            }
+            async Task<List<Currency>> GetListCurrency(List<Account> accounts)
+            {
+                var currencysAmount = new List<Currency>();
+                foreach (var account in accounts)
+                {
+                    currencysAmount.Add(await currencyService.GetCurrency(account.CurrencyIdAmount));
+                }
+                return currencysAmount;
             }
         }
         [Fact]

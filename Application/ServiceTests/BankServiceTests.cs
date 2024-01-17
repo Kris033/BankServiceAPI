@@ -7,7 +7,7 @@ namespace ServiceTests
     public class BankServiceTests
     {
         [Fact]
-        public void AddPersonInToBlackListTest()
+        public async Task AddPersonInToBlackListTest()
         {
             //Arrange
             BankService service = new BankService();
@@ -15,9 +15,10 @@ namespace ServiceTests
             EmployeeService employeeService = new EmployeeService();
 
             //Act
-            var employee = generator.GenerationEmployees(1).First();
-            service.AddToBlackList(employee);
-            employeeService.ChangeEmployee(employee);
+            var employees = await generator.GenerationEmployees(1);
+            var employee = employees.First();
+            await service.AddToBlackList(employee);
+            await employeeService.ChangeEmployee(employee);
 
             //Assert
             Assert.True(service.IsPersonInBlackList(employee));

@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Text;
 using CsvHelper.Configuration;
 using Services;
-using System.Linq;
 
 namespace ExportTool
 {
@@ -17,7 +16,7 @@ namespace ExportTool
             _pathToDirectory = pathToDirectory;
             _csvFileName = csvFileName;
         }
-        public void ExportClientsForCsv(List<Client> clients)
+        public async Task ExportClientsForCsv(List<Client> clients)
         {
             var listClient = ConvertatorClients(clients);
             DirectoryInfo dirInfo = new DirectoryInfo(_pathToDirectory);
@@ -26,10 +25,10 @@ namespace ExportTool
             using var fileStream = new FileStream(fullPath, FileMode.OpenOrCreate);
             using var streamWriter = new StreamWriter(fileStream, Encoding.UTF8);
             using var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
-            csvWriter.WriteRecords(listClient);
-            csvWriter.Flush();
+            await csvWriter.WriteRecordsAsync(listClient);
+            await csvWriter.FlushAsync();
         }
-        public void ImportClientsFromCsv()
+        public async Task ImportClientsFromCsv()
         {
             string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
             var config = new CsvConfiguration(CultureInfo.InvariantCulture);
@@ -37,10 +36,10 @@ namespace ExportTool
             using var csvReader = new CsvReader(streamReader, config);
             var clientService = new ClientService();
             var clientsList = new List<Client>();
-            var clientsListFromDb = clientService.GetClients();
-            csvReader.Read();
+            var clientsListFromDb = await clientService.GetClients();
+            await csvReader.ReadAsync();
             csvReader.ReadHeader();
-            while (csvReader.Read())
+            while (await csvReader.ReadAsync())
             {
                 var clientCsv = new Client(
                     csvReader.GetField("Phone")!,
@@ -56,7 +55,7 @@ namespace ExportTool
             {
                 if (!clientsListFromDb.Any(c => c.PassportId == clientCsv.PassportId))
                 {
-                    clientService.AddClient(clientCsv);
+                    await clientService.AddClient(clientCsv);
                 }
             }
         }

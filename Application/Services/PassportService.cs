@@ -1,4 +1,5 @@
 ﻿using BankDbConnection;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Validations;
 
@@ -6,34 +7,33 @@ namespace Services
 {
     public class PassportService
     {
-        public Passport? GetPassport(string numberPassport)
+        public async Task<Passport?> GetPassport(string numberPassport)
         {
             using var db = new BankContext();
-            var passport = db.Passport.FirstOrDefault(p => p.NumberPassport.Contains(numberPassport));
+            var passport = await db.Passport.FirstOrDefaultAsync(p => p.NumberPassport.Contains(numberPassport));
             return passport;
         }
-        public Passport? GetPassport(Guid idPassport) 
+        public async Task<Passport?> GetPassport(Guid idPassport) 
         {
             using var db = new BankContext();
-            return db.Passport.FirstOrDefault(p => p.Id == idPassport);
+            return await db.Passport.FirstOrDefaultAsync(p => p.Id == idPassport);
         }
-        public void AddPassport(Passport passport)
+        public async Task AddPassport(Passport passport)
         {
             passport.Validation();
-            using (var db = new BankContext())
-            {
-                db.Passport.Add(passport);
-                db.SaveChanges();
-            }
+            using var db = new BankContext();
+            await db.Passport.AddAsync(passport);
+            await db.SaveChangesAsync();
+            
         }
-        public void DeletePassport(Guid id)
+        public async Task DeletePassport(Guid id)
         {
             using var db = new BankContext();
-            var passport = db.Passport.FirstOrDefault(p => p.Id == id);
+            var passport = await db.Passport.FirstOrDefaultAsync(p => p.Id == id);
             if (passport != null)
             {
                 db.Passport.Remove(passport);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
         }
     }

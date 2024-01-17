@@ -1,4 +1,5 @@
 ﻿using BankDbConnection;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using System.Collections;
 
@@ -6,8 +7,11 @@ namespace Services.Storage
 {
     public class ClientStorage : IEnumerable<Client>, IClientStorage
     {
-        private Client? GetClientById(Guid idClient)
-            => new BankContext().Client.FirstOrDefault(c => c.Id == idClient);
+        private async Task<Client?> GetClientById(Guid idClient) 
+        {
+            using var db = new BankContext();
+            return await db.Client.FirstOrDefaultAsync(c => c.Id == idClient);
+        }
         public Dictionary<Client, List<Account>> Data { get; }
         public ClientStorage(Dictionary<Client, List<Account>> clientsAccount)
         {
@@ -42,15 +46,15 @@ namespace Services.Storage
             Data.Remove(client);
         }
 
-        public void AddAccount(Account account)
+        public async void AddAccount(Account account)
         {
-            var client = GetClientById(account.ClientId);
+            var client = await GetClientById(account.ClientId);
             if(client != null) Data[client].Add(account);
         }
 
-        public void UpdateAccount(Account account)
+        public async void UpdateAccount(Account account)
         {
-            var client = GetClientById(account.ClientId);
+            var client = await GetClientById(account.ClientId);
             if (client != null) 
                 Data[client].ForEach(a =>
                 {
@@ -58,9 +62,9 @@ namespace Services.Storage
                 });
         }
 
-        public void DeleteAccount(Account account)
+        public async void DeleteAccount(Account account)
         {
-            var client = GetClientById(account.ClientId);
+            var client = await GetClientById(account.ClientId);
             if (client != null) Data[client].Remove(account);
         }
 
