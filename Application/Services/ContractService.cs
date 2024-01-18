@@ -6,10 +6,10 @@ namespace Services
 {
     public class ContractService
     {
-        public async Task<Contract?> GetContract(Guid employeeGuid)
+        public async Task<Contract?> GetContract(Guid contractId)
         {
             using var db = new BankContext();
-            return await db.Contract.FirstOrDefaultAsync(c => c.EmployeeId == employeeGuid);
+            return await db.Contract.FirstOrDefaultAsync(c => c.Id == contractId);
         }
         public async Task SetContract(Guid idContract)
         {

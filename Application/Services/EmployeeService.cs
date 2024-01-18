@@ -127,11 +127,12 @@ namespace Services
             db.Employee.Update(employee);
             await db.SaveChangesAsync();
         }
-        public async Task DeleteEmployee(Employee employee)
+        public async Task DeleteEmployee(Guid idEmployee)
         {
             using var db = new BankContext();
-            if (!await db.Employee.AnyAsync(e => e.Id == employee.Id))
-                throw new ArgumentException("Работник не совпадает с удаляемым работником");
+            var employee = await db.Employee.FirstOrDefaultAsync(e => e.Id == idEmployee);
+            if (employee == null)
+                throw new ArgumentNullException("Работник не совпадает с удаляемым работником");
             db.Employee.Remove(employee);
             await db.SaveChangesAsync();
         }
