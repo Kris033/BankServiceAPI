@@ -37,7 +37,7 @@ namespace ServiceTests
             {
                 Thread.Sleep(100);
                 mutex.WaitOne();
-                ExportService exportService = new ExportService(@"..\..\..\..\ExportTool\ExcelInfo", "clients.csv");
+                ExportClientsService exportService = new ExportClientsService(@"..\..\..\..\ExportTool\ExcelInfo", "clients.csv");
                 
                 await exportService.ImportClientsFromCsv();
                 mutex.ReleaseMutex();
@@ -46,7 +46,7 @@ namespace ServiceTests
             {
                 Thread.Sleep(90);
                 mutex.WaitOne();
-                ExportService exportService = new ExportService(@"..\..\..\..\ExportTool\ExcelInfo", "clientsFromDb.csv");
+                ExportClientsService exportService = new ExportClientsService(@"..\..\..\..\ExportTool\ExcelInfo", "clientsFromDb.csv");
                 
                 await exportService.ExportClientsForCsv(await clientService.GetClients());
                 mutex.ReleaseMutex();

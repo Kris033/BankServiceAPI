@@ -1,0 +1,7 @@
+﻿Name,Age,NumberPhone,InBlackList,JobPosition,Id,Value,TypeCurrency,StartDateWork,EndDateWork,ContractId,PassportId
+Власова София,38,400-9880-305,False,Security,28d45f1d-b4c8-4d92-89f7-3b1c69a8d34b,400,Dollar,01/18/2024,01/18/2026,,c0e38078-3d3a-434e-ac01-a61216266918
+Русаков Матвей,33,845-2363-643,False,Security,0a771ae6-5765-4bc4-99d6-ed3f030a8ba0,400,Dollar,01/18/2024,01/18/2026,,941ea0f6-33b2-4f86-81a6-26b0d232e6dd
+Хохлова Любовь,33,034-8893-918,False,Security,a873deae-b9e5-4b66-8ea1-e77f8e36098d,400,Dollar,01/18/2024,01/18/2026,,e8bcc9e0-bad4-4ce6-ba67-ad635f5013e3
+Воронова Ксения,21,947-4848-673,False,Security,1901d9a0-f2b8-4b80-aea5-ef2fb2923899,400,Dollar,01/18/2024,01/18/2026,,9771adbf-3e56-46c1-a9ca-701f07f55b82
+Некрасова Людмила,42,363-1526-685,False,Security,aadff02e-1854-44f5-9ecb-d8aa6016f087,400,Dollar,01/18/2024,01/18/2026,,968fc0cf-74df-4129-9d54-16476eae6a6f
+Воробьев Никита,42,351-1274-314,False,Trainee,c58a257e-45ad-4bb5-a9fe-d03c38c9798d,8486,Euro,12/27/2020,01/10/2027,,c22e0766-4642-4e76-acbe-5919b2d5f42f
