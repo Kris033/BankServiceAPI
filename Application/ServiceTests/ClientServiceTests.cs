@@ -131,7 +131,7 @@ namespace ServiceTests
                 await passportService.AddPassport(passport);
                 var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
                 await clientService.AddClient(client);
-                var amount = new Models.Currency(0, CurrencyType.LeiMD);
+                var amount = new Models.Currency(0, CurrencyType.MDL);
                 await currencyService.AddCurrency(amount);
                 var account = new Account(client.Id, faker.Random.ReplaceNumbers("###! #### #### ####"), amount.Id);
                 await clientService.AddAccount(account);
@@ -152,7 +152,7 @@ namespace ServiceTests
             await passportService.AddPassport(passport);
             var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
             await clientService.AddClient(client);
-            var amount = new Models.Currency(0, CurrencyType.LeiMD);
+            var amount = new Models.Currency(0, CurrencyType.MDL);
             await currencyService.AddCurrency(amount);
             var account = new Account(client.Id, faker.Random.ReplaceNumbers("#### #### #### ####"), amount.Id);
             await clientService.AddAccount(account);
@@ -182,7 +182,7 @@ namespace ServiceTests
                 await passportService.AddPassport(passport);
                 var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
                 await clientService.AddClient(client);
-                var amount = new Models.Currency(0, CurrencyType.LeiMD);
+                var amount = new Models.Currency(0, CurrencyType.MDL);
                 await currencyService.AddCurrency(amount);
                 var account = new Account(client.Id, faker.Random.ReplaceNumbers("#### #### #### ####"), amount.Id);
                 await clientService.AddAccount(account);
@@ -205,7 +205,7 @@ namespace ServiceTests
             await passportService.AddPassport(passport);
             var client = new Client(faker.Random.ReplaceNumbers("###-####-###"), passport.Id, passport.GetFullName(), passport.GetAge());
             await clientService.AddClient(client);
-            var amount = new Models.Currency(0, CurrencyType.LeiMD);
+            var amount = new Models.Currency(0, CurrencyType.MDL);
             await currencyService.AddCurrency(amount);
             var account = new Account(client.Id, faker.Random.ReplaceNumbers("#### #### #### ####"), amount.Id);
             await clientService.AddAccount(account);

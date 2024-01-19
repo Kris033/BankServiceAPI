@@ -5,7 +5,7 @@ using Services;
 namespace BankAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("Bank/[controller]/[action]")]
     public class PassportController : Controller
     {
         public PassportController(ILogger<PassportController> logger)
@@ -13,24 +13,18 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
         private ILogger<PassportController> _logger;
-        //[HttpGet(Name = "GetPassports")]
-        //public async Task<IEnumerable<Passport>> GetPassports()
-        //{
-        //    var passports = await new PassportService().GetPassports();
-        //    return passports.AsEnumerable();
-        //}
-        [HttpGet(Name = "GetPassport")]
-        public async Task<Passport?> GetPassport(Guid idPassport)
+        [HttpGet("{id}")]
+        public async Task<Passport?> Get(Guid idPassport)
         {
             return await new PassportService().GetPassport(idPassport);
         }
-        [HttpPut(Name = "PutPassport")]
-        public async Task PutPassport(Passport passport)
+        [HttpPost]
+        public async Task Add(Passport passport)
         {
             await new PassportService().AddPassport(passport);
         }
-        [HttpDelete(Name = "DeletePassport")]
-        public async Task DeletePassport(Guid idPassport)
+        [HttpDelete("{id}")]
+        public async Task Delete(Guid idPassport)
         {
             await new PassportService().DeletePassport(idPassport);
         }

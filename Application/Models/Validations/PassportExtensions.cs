@@ -40,7 +40,7 @@
         public static void ValidationFieldDateBorn(this Passport passport)
         {
             var dateTimeToday = DateTime.Today;
-            if (passport.DateBorn.ToDateTime(new TimeOnly()) > dateTimeToday)
+            if (passport.DateBorn > dateTimeToday)
                 throw new ArgumentOutOfRangeException("Человек не мог родиться в будущем");
         }
         public static void ValidationFieldDateGivePassport(this Passport passport)

@@ -48,8 +48,12 @@ namespace Services
                         person.Age,
                         (JobPosition)_fakerRu.Random.Number(0, 3),
                         currency.Id,
-                        _fakerRu.Date.BetweenDateOnly(new DateOnly(2003, 10, 5), new DateOnly(2024, 1, 3)),
-                        _fakerRu.Date.FutureDateOnly(3));
+                        _fakerRu.Date.BetweenDateOnly(
+                            new DateOnly(2003, 10, 5),
+                            new DateOnly(2024, 1, 3))
+                        .ToDateTime(new TimeOnly()),
+                        _fakerRu.Date.FutureDateOnly(3)
+                        .ToDateTime(new TimeOnly()));
                 await clientService.AddEmployee(employee);
                 employees.Add(employee);
             }
@@ -90,11 +94,13 @@ namespace Services
                 gender,
                 _fakerRu.Date.BetweenDateOnly(
                     new DateOnly(1980, 6, 20),
-                    new DateOnly(2004, 9, 12)),
+                    new DateOnly(2004, 9, 12))
+                .ToDateTime(new TimeOnly()),
                 "город " + city, "г. Тирасполь, УВД ПМР, д.24",
                 _fakerRu.Date.BetweenDateOnly(
                     new DateOnly(2005, 9, 2),
-                    new DateOnly(2024, 1, 13)),
+                    new DateOnly(2024, 1, 13))
+                .ToDateTime(new TimeOnly()),
                 _fakerRu.Random.ReplaceNumbers("1-ПР №0#####"),
                 string.Join(", ", "г." + city, _fakerRu.Person.Address.Street, _fakerRu.Person.Address.Suite));
         }

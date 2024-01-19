@@ -26,9 +26,9 @@ namespace Services
             {
                 var passportService = new PassportService();
                 List<Passport> passportList = new List<Passport>();
-                await clients.ForEachAsync(c =>
+                await clients.ForEachAsync(async c =>
                 {
-                    var passport = passportService.GetPassport(c.PassportId).Result;
+                    var passport = await passportService.GetPassport(c.PassportId);
                     if (passport != null) passportList.Add(passport);
                 });
                 var passports = passportList.AsQueryable();
@@ -55,8 +55,8 @@ namespace Services
                     passports = passports
                         .Where(p => p!
                             .DateBorn <= filterRequest.DateBornTo);
-                passportList = await passports.ToListAsync();
-                var clientList = await clients.ToListAsync();
+                passportList = passports.ToList();
+                var clientList = clients.ToList();
                 if (passportList.Count > 0)
                     clientList = clientList.Where(c => passportList.Any(p => c.PassportId == p.Id)).ToList();
                 if (filterRequest.CountItem != null && filterRequest.CountItem > 0 && filterRequest.CountItem < clientList.Count())

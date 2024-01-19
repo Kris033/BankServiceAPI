@@ -15,7 +15,6 @@ namespace PracticeWithTypes
             var dataGenerator = new TestDataGenerator();
             var servicePassport = new PassportService();
 
-            TestAsync();
             //servicePassport.AddPassport(dataGenerator.GenerationPassport()); 
             //var employees = dataGenerator.GenerationEmployees(1000);
             //var clients = dataGenerator.GenerationClients(1000);

@@ -10,11 +10,12 @@ namespace Services
         public string GetBalance(Currency currency) => $"Баланс: {currency.Value} {currency.TypeCurrency}.";
         public async Task Put(Guid idAccount, Currency currency)
         {
+            CurrencyService currencyService = new CurrencyService();
             using var db = new BankContext();
             var account = await db.Account.FirstOrDefaultAsync(a => a.Id == idAccount);
             var currencyAccount = await db.Currency.FirstOrDefaultAsync(c => c.Id == account!.CurrencyIdAmount);
             if (currency.TypeCurrency != currencyAccount!.TypeCurrency)
-                currency.ExChange(currencyAccount!.TypeCurrency);
+                await currencyService.ExChange(currency, currencyAccount!.TypeCurrency);
             var response = currencyAccount!.Validation(currency);
             if (response.IsSuccses == false)
                 account!.OnNotify(response.ErrorMessage!);
@@ -27,11 +28,12 @@ namespace Services
         }
         public async Task Remove(Guid idAccount, Currency currency)
         {
+            CurrencyService currencyService = new CurrencyService();
             using var db = new BankContext();
             var account = await db.Account.FirstOrDefaultAsync(a => a.Id == idAccount);
             var currencyAccount = await db.Currency.FirstOrDefaultAsync(c => c.Id == account!.CurrencyIdAmount);
             if (currency.TypeCurrency != currencyAccount!.TypeCurrency)
-                currency.ExChange(currencyAccount.TypeCurrency);
+                await currencyService.ExChange(currency, currencyAccount!.TypeCurrency);
             var response = currencyAccount!.Validation(currency, true);
             if (response.IsSuccses == false)
                 account!.OnNotify(response.ErrorMessage!);

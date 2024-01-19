@@ -20,13 +20,13 @@ namespace PracticeWithTypes.Extensions
                     "спустя 11 месяцев отработки сотрудник имеет право взять отпуск сроком до 21 дня")));
         }
 
-        public static void UpdateSalaryDirectors(this List<Employee> listEmployee, BankService bankService)
+        public static async Task UpdateSalaryDirectors(this List<Employee> listEmployee, BankService bankService)
         {
-            Currency salaryDirectors = bankService.CalculationSalaryBetweenDirectors(
+            Currency salaryDirectors = await bankService.CalculationSalaryBetweenDirectors(
                 listEmployee.Count(
                     e => e.JobPositionType == JobPosition.Director),
-                new Currency(800000, CurrencyType.LeiMD),
-                new Currency(150000, CurrencyType.LeiMD));
+                new Currency(800000, CurrencyType.MDL),
+                new Currency(150000, CurrencyType.MDL));
             var currencyService = new CurrencyService();
             listEmployee.ForEach(async e =>
             {
@@ -34,8 +34,7 @@ namespace PracticeWithTypes.Extensions
                 {
                     var currency = await currencyService.GetCurrency(e.CurrencyIdSalary);
                     if (salaryDirectors.TypeCurrency != currency!.TypeCurrency)
-                        currency.ExChange(salaryDirectors.TypeCurrency);
-                    currency.ChangeValue(salaryDirectors.Value);
+                        await currencyService.ExChange(currency, salaryDirectors.TypeCurrency);
                     await currencyService.UpdateCurrency(salaryDirectors);
                 }
             });

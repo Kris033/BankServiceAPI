@@ -5,8 +5,8 @@
         public string? SearchFullName { get; set; }
         public string? SearchNumberPhone { get; set; }
         public string? SearchNumberPassport { get; set; }
-        public DateOnly? DateBornFrom { get; set; }
-        public DateOnly? DateBornTo { get; set; }
+        public DateTime? DateBornFrom { get; set; }
+        public DateTime? DateBornTo { get; set; }
         public int? CountItem { get; set; }
     }
 }

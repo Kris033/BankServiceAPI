@@ -1,9 +1,12 @@
-﻿namespace Models.Enums
+﻿using System.Text.Json.Serialization;
+
+namespace Models.Enums
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum CurrencyType
     {
-        Euro,
-        Dollar,
-        LeiMD
+        EUR,
+        USD,
+        MDL
     }
 }

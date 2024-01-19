@@ -12,8 +12,8 @@ namespace ExportTool
             bool inBlackList,
             JobPosition jobPosition,
             Currency salary, 
-            DateOnly startDateWork,
-            DateOnly endDateWork,
+            DateTime startDateWork,
+            DateTime endDateWork,
             Guid? contractId,
             Guid passportId) 
         {
@@ -34,8 +34,8 @@ namespace ExportTool
         public bool InBlackList { get; set; }
         public JobPosition JobPosition { get; set; }
         public Currency Salary { get; set; }
-        public DateOnly StartDateWork { get; set; }
-        public DateOnly EndDateWork { get; set; }
+        public DateTime StartDateWork { get; set; }
+        public DateTime EndDateWork { get; set; }
         public Guid? ContractId { get; set; }
         public Guid PassportId { get; set; }
     }

@@ -5,7 +5,7 @@ using Services;
 namespace BankAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("Bank/[controller]/[action]")]
     public class ContractController : Controller
     {
         public ContractController(ILogger<ContractController> logger)
@@ -13,29 +13,24 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
         private ILogger<ContractController> _logger;
-        //[HttpGet(Name = "GetPassports")]
-        //public async Task<IEnumerable<Passport>> GetPassports()
-        //{
-        //    var passports = await new PassportService().GetPassports();
-        //    return passports.AsEnumerable();
-        //}
-        [HttpGet(Name = "GetContract")]
-        public async Task<Contract?> GetContract(Guid idContract)
+
+        [HttpGet("{id}")]
+        public async Task<Contract?> Get(Guid idContract)
         {
             return await new ContractService().GetContract(idContract);
         }
-        [HttpPut(Name = "PutContract")]
-        public async Task PutContract(Contract contract)
+        [HttpPost]
+        public async Task Add(Contract contract)
         {
             await new ContractService().AddContract(contract);
         }
-        [HttpPost(Name = "PostContract")]
-        public async Task PostContract(Contract contract)
+        [HttpPut]
+        public async Task Update(Contract contract)
         {
-            await new ContractService().AddContract(contract);
+            await new ContractService().UpdateContract(contract);
         }
-        [HttpDelete(Name = "DeleteContract")]
-        public async Task DeleteContract(Guid idContract)
+        [HttpDelete("{id}")]
+        public async Task Delete(Guid idContract)
         {
             await new ContractService().DeleteContract(idContract);
         }

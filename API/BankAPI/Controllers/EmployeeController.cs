@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Models;
+using Models.Requests;
 using Services;
 
 namespace BankAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("Bank/[controller]/[action]")]
     public class EmployeeController : Controller
     {
         public EmployeeController(ILogger<EmployeeController> logger)
@@ -13,29 +14,28 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
         private ILogger<EmployeeController> _logger;
-        //[HttpGet(Name = "GetEmployees")]
-        //public async Task<IEnumerable<Employee>> GetEmployees()
-        //{
-        //    var employees = await new EmployeeService().GetEmployees();
-        //    return employees.AsEnumerable();
-        //}
-        [HttpGet(Name = "GetEmployee")]
-        public async Task<Employee?> GetEmployee(Guid idEmployee)
+        [HttpGet]
+        public async Task<IEnumerable<Employee>> GetEmployees([FromQuery] GetFilterRequest? filterRequest = null)
+        {
+            return await new EmployeeService().GetEmployees(filterRequest);
+        }
+        [HttpGet("{id}")]
+        public async Task<Employee?> Get(Guid idEmployee)
         {
             return await new EmployeeService().GetEmployee(idEmployee);
         }
-        [HttpPut(Name = "PutEmployee")]
-        public async Task PutEmployee(Employee employee)
-        {
-            await new EmployeeService().AddEmployee(employee);
-        }
-        [HttpPost(Name = "PostEmployee")]
-        public async Task PostEmployee(Employee employee)
+        [HttpPost]
+        public async Task Add(Employee employee)
         {
             await new EmployeeService().ChangeEmployee(employee);
         }
-        [HttpDelete(Name = "DeleteEmployee")]
-        public async Task DeleteEmployee(Guid idEmployee)
+        [HttpPut]
+        public async Task Update(Employee employee)
+        {
+            await new EmployeeService().AddEmployee(employee);
+        }
+        [HttpDelete("{id}")]
+        public async Task Delete(Guid idEmployee)
         {
             await new EmployeeService().DeleteEmployee(idEmployee);
         }

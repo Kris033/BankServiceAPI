@@ -85,7 +85,7 @@ namespace ServiceTests
             EmployeeService employeeService = new EmployeeService();
 
             //Act
-            List<Employee> employees = await employeeService.GetEmployees(new GetFilterRequest() { DateBornFrom = new DateOnly(1996, 1, 1) });
+            List<Employee> employees = await employeeService.GetEmployees(new GetFilterRequest() { DateBornFrom = new DateTime(1996, 1, 1) });
 
             //Assert
             Assert.DoesNotContain(employees, e => e.Age > 28);

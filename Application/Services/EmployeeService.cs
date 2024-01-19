@@ -20,9 +20,9 @@ namespace Services
             {
                 var passportService = new PassportService();
                 List<Passport> passportList = new List<Passport>();
-                await employees.ForEachAsync(c =>
+                await employees.ForEachAsync(async c =>
                 {
-                    var passport = passportService.GetPassport(c.PassportId).Result;
+                    var passport = await passportService.GetPassport(c.PassportId);
                     if (passport != null) passportList.Add(passport);
                 });
                 var passports = passportList.AsQueryable();
@@ -49,15 +49,15 @@ namespace Services
                     passports = passports
                         .Where(p => p!
                             .DateBorn <= filterRequest.DateBornTo);
-                passportList = await passports.ToListAsync();
-                var employeeList = await employees.ToListAsync();
+                passportList = passports.ToList();
+                var employeeList = employees.ToList();
                 if (passportList.Count > 0)
                     employeeList = employeeList.Where(c => passportList.Any(p => c.PassportId == p.Id)).ToList();
                 if (filterRequest.CountItem != null && filterRequest.CountItem > 0 && filterRequest.CountItem < employeeList.Count())
                     employeeList = employeeList.Take((int)filterRequest.CountItem).ToList();
                 return employeeList.ToList();
             }
-            return await employees.ToListAsync();
+            return employees.ToList();
         }
         public async Task<Employee> GetYoungestEmployee()
         {

@@ -50,8 +50,8 @@ namespace ExportTool
                     csvReader.GetField<int>("Age"),
                     csvReader.GetField<JobPosition>("JobPosition"),
                     csvReader.GetField<Guid>("Id"),
-                    csvReader.GetField<DateOnly>("StartDateWork"),
-                    csvReader.GetField<DateOnly>("EndDateWork"))
+                    csvReader.GetField<DateTime>("StartDateWork"),
+                    csvReader.GetField<DateTime>("EndDateWork"))
                 {
                     InBlackList = csvReader.GetField<bool>("InBlackList"),
                     ContractId = csvReader.GetField<Guid?>("Id")

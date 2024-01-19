@@ -56,7 +56,8 @@ namespace ServiceTests
         public void ParallelPutCurrencyInAccount()
         {
             //Arrange
-            Currency currency = new Currency(0, Models.Enums.CurrencyType.Dollar);
+            CurrencyService currencyService = new CurrencyService();
+            Currency currency = new Currency(0, Models.Enums.CurrencyType.USD);
             Faker faker = new Faker();
             Mutex mutex = new Mutex();
             Thread thread1 = new Thread(PutInAccount);
@@ -78,14 +79,15 @@ namespace ServiceTests
             }
             
 
-            void PutInAccount()
+            async void PutInAccount()
             {
                 mutex.WaitOne();
-                Currency currencyPut = new Currency(100, Models.Enums.CurrencyType.Dollar);
+
+                Currency currencyPut = new Currency(100, Models.Enums.CurrencyType.USD);
                 for (int i = 0; i < 10; i++)
                 {
                     if (currency.TypeCurrency != currencyPut.TypeCurrency)
-                        currencyPut.ExChange(currency.TypeCurrency);
+                        await currencyService.ExChange(currencyPut, currency.TypeCurrency);
                     Thread.Sleep(100);
                     currency.ChangeValue(currency.Value + currencyPut.Value);
                 }

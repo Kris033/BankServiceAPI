@@ -5,7 +5,7 @@ using Services;
 namespace BankAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("Bank/[controller]/[action]")]
     public class AccountController : Controller
     {
         public AccountController(ILogger<AccountController> logger)
@@ -13,29 +13,28 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
         private ILogger<AccountController> _logger;
-        //[HttpGet(Name = "GetPassports")]
-        //public async Task<IEnumerable<Passport>> GetPassports()
-        //{
-        //    var passports = await new PassportService().GetPassports();
-        //    return passports.AsEnumerable();
-        //}
-        [HttpGet(Name = "GetAccount")]
-        public async Task<Account?> GetAccount(Guid idAccount)
+        [HttpGet("{id}")]
+        public async Task<IEnumerable<Account>> GetClientAccounts(Guid idClient)
+        {
+            return await new ClientService().GetAccounts(idClient);
+        }
+        [HttpGet("{id}")]
+        public async Task<Account?> Get(Guid idAccount)
         {
             return await new ClientService().GetAccount(idAccount);
         }
-        [HttpPut(Name = "PutAccount")]
-        public async Task PutAccount(Account account)
-        {
-            await new ClientService().AddAccount(account);
-        }
-        [HttpPost(Name = "PostAccount")]
-        public async Task PostAccount(Account account)
+        [HttpPut]
+        public async Task Update(Account account)
         {
             await new ClientService().ChangeAccountClient(account);
         }
-        [HttpDelete(Name = "DeleteAccount")]
-        public async Task DeleteAccount(Guid idAccount)
+        [HttpPost]
+        public async Task Add(Account account)
+        {
+            await new ClientService().AddAccount(account);
+        }
+        [HttpDelete("{id}")]
+        public async Task Delete(Guid idAccount)
         {
             await new ClientService().DeleteAccountClient(idAccount);
         }

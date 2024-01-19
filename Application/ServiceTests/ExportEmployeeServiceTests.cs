@@ -50,8 +50,12 @@ namespace ServiceTests
                 passport.GetAge(),
                 faker.PickRandom<JobPosition>(),
                 currency.Id,
-                faker.Date.BetweenDateOnly(new DateOnly(2003, 10, 5), new DateOnly(2024, 1, 3)),
-                faker.Date.FutureDateOnly(3));
+                faker.Date.BetweenDateOnly(
+                    new DateOnly(2003, 10, 5),
+                    new DateOnly(2024, 1, 3))
+                .ToDateTime(new TimeOnly()),
+                faker.Date.FutureDateOnly(3)
+                .ToDateTime(new TimeOnly()));
             employees.Add(newEmployee);
             await exportService.ExportEmployeesForCsv(employees);
             await exportService.ImportEmployeesFromCsv();
@@ -100,8 +104,12 @@ namespace ServiceTests
                 passport.GetAge(),
                 faker.PickRandom<JobPosition>(),
                 currency.Id,
-                faker.Date.BetweenDateOnly(new DateOnly(2003, 10, 5), new DateOnly(2024, 1, 3)),
-                faker.Date.FutureDateOnly(3));
+                faker.Date.BetweenDateOnly(
+                    new DateOnly(2003, 10, 5),
+                    new DateOnly(2024, 1, 3))
+                .ToDateTime(new TimeOnly()),
+                faker.Date.FutureDateOnly(3)
+                .ToDateTime(new TimeOnly()));
             employees.Add(newEmployee);
             string jsonEmployees = await exportService.ExportEmployeesToJson(employees);
             await exportService.ImportClientsFromJson(jsonEmployees);

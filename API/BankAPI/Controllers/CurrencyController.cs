@@ -5,7 +5,7 @@ using Services;
 namespace BankAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("Bank/[controller]/[action]")]
     public class CurrencyController : Controller
     {
         public CurrencyController(ILogger<CurrencyController> logger)
@@ -13,29 +13,23 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
         private ILogger<CurrencyController> _logger;
-        //[HttpGet(Name = "GetPassports")]
-        //public async Task<IEnumerable<Passport>> GetPassports()
-        //{
-        //    var passports = await new PassportService().GetPassports();
-        //    return passports.AsEnumerable();
-        //}
-        [HttpGet(Name = "GetCurrency")]
-        public async Task<Currency?> GetCurrency(Guid idCurrency)
+        [HttpGet("{id}")]
+        public async Task<Currency?> Get(Guid idCurrency)
         {
             return await new CurrencyService().GetCurrency(idCurrency);
         }
-        [HttpPut(Name = "PutCurrency")]
-        public async Task PutCurrency(Currency currency)
+        [HttpPost]
+        public async Task Add(Currency currency)
         {
             await new CurrencyService().AddCurrency(currency);
         }
-        [HttpPost(Name = "PostCurrency")]
-        public async Task PostPassport(Currency currency)
+        [HttpPut]
+        public async Task Update(Currency currency)
         {
-            await new CurrencyService().AddCurrency(currency);
+            await new CurrencyService().UpdateCurrency(currency);
         }
-        [HttpDelete(Name = "DeleteCurrency")]
-        public async Task DeleteCurrency(Guid idCurrency)
+        [HttpDelete("{id}")]
+        public async Task Delete(Guid idCurrency)
         {
             await new CurrencyService().DeleteCurrency(idCurrency);
         }

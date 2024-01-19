@@ -2,11 +2,28 @@
 using Models.Validations;
 using Models;
 using Microsoft.EntityFrameworkCore;
+using Models.Enums;
+using Models.Response;
+using Newtonsoft.Json;
 
 namespace Services
 {
     public class CurrencyService
     {
+        public async Task ExChange(Currency currency, CurrencyType currencyTypeExChange)
+        {
+            using var httpClient = new HttpClient();
+            HttpResponseMessage responseMessage =
+                await httpClient.GetAsync($"https://www.amdoren.com/api/currency.php?api_key=SJXtXrBuTgSX9WwGPgkEXPWq9rXUMw&from={currency.TypeCurrency}&to={currencyTypeExChange}&amount={currency.Value}");
+            var message = await responseMessage.Content.ReadAsStringAsync();
+            var exChangeResponse = JsonConvert.DeserializeObject<GetExChangeResponse>(message);
+
+            if (exChangeResponse!.Error < 0)
+            {
+                currency.ChangeValue(exChangeResponse.Amount);
+                currency.TypeCurrency = currencyTypeExChange;
+            }
+        }
         public async Task<Currency?> GetCurrency(Guid id)
         {
             using var db = new BankContext();

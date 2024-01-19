@@ -12,10 +12,10 @@ namespace Models
             string lastName,
             string? secondName,
             GenderType gender,
-            DateOnly dateBorn,
+            DateTime dateBorn,
             string placeBorn,
             string placeGivePassport,
-            DateOnly dateGivePassport,
+            DateTime dateGivePassport,
             string numberPassport,
             string? locationResidence) 
         {
@@ -46,7 +46,7 @@ namespace Models
         public GenderType Gender { get; private set; }
         [Required]
         [Column("date_born")]
-        public DateOnly DateBorn { get; private set; }
+        public DateTime DateBorn { get; private set; }
         [Required]
         [Column("place_born")]
         public string PlaceBorn { get; private set; }
@@ -58,7 +58,7 @@ namespace Models
         public string NumberPassport { get; private set; }
         [Required]
         [Column("date_give_passport")]
-        public DateOnly DateGivePassport { get; private set; }
+        public DateTime DateGivePassport { get; private set; }
         [Column("location_residence")]
         public string? LocationResidence { get; private set; }
         public string GetFullInformation()
@@ -76,9 +76,9 @@ namespace Models
         }
         public int GetAge()
         {
-            var dateTimeBorn = DateBorn.ToDateTime(new TimeOnly());
-            int age = DateTime.Today.Year - dateTimeBorn.Year;
-            if (dateTimeBorn.AddYears(age) > DateTime.Today)
+            var dateBorn = DateBorn;
+            int age = DateTime.Today.Year - dateBorn.Year;
+            if (dateBorn.AddYears(age) > DateTime.Today)
                 age--;
             return age;
         }

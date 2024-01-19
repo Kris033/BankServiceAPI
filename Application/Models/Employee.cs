@@ -14,8 +14,8 @@ namespace Models
             int age,
             JobPosition jobPositionType,
             Guid currencyIdSalary,
-            DateOnly startWorkDate,
-            DateOnly endContractDate) 
+            DateTime startWorkDate,
+            DateTime endContractDate) 
             : base(passportId, numberPhone, name, age) 
         {
             JobPositionType = jobPositionType;
@@ -27,10 +27,10 @@ namespace Models
         public Guid? ContractId { get; set; }
         [Required]
         [Column("start_work_date")]
-        public DateOnly StartWorkDate { get; set; }
+        public DateTime StartWorkDate { get; set; }
         [Required]
         [Column("end_contract_date")]
-        public DateOnly EndContractDate { get; set; }
+        public DateTime EndContractDate { get; set; }
         [Required]
         [Column("job_position_type")]
         public JobPosition JobPositionType { get; private set; }

@@ -22,10 +22,10 @@ namespace ServiceTests
             //Act
             var passport = dataGenerator.GenerationPassport();
             await passportService.AddPassport(passport);
-            var salary = new Models.Currency(400, CurrencyType.Dollar);
+            var salary = new Models.Currency(400, CurrencyType.USD);
             await currencyService.AddCurrency(salary);
-            var dateOnlyToday = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day);
-            var dateOnlyFuture2Year = dateOnlyToday.AddYears(2);
+            var dateTimeToday = DateTime.Today;
+            var dateFuture2Year = dateTimeToday.AddYears(2);
             var employee = new Employee(
                 passport.Id,
                 faker.Random.ReplaceNumbers("###-####-###"),
@@ -33,8 +33,8 @@ namespace ServiceTests
                 passport.GetAge(),
                 JobPosition.Security,
                 salary.Id,
-                dateOnlyToday,
-                dateOnlyFuture2Year);
+                dateTimeToday,
+                dateFuture2Year);
             await employeeService.AddEmployee(employee);
 
             //Assert
@@ -56,10 +56,10 @@ namespace ServiceTests
                 //Act
                 var passport = dataGenerator.GenerationPassport();
                 await passportService.AddPassport(passport);
-                var salary = new Models.Currency(400, CurrencyType.Dollar);
+                var salary = new Models.Currency(400, CurrencyType.USD);
                 await currencyService.AddCurrency(salary);
-                var dateOnlyToday = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day);
-                var dateOnlyFuture2Year = dateOnlyToday.AddYears(2);
+                var dateTimeToday = DateTime.Today;
+                var dateFuture2Year = dateTimeToday.AddYears(2);
                 var employee = new Employee(
                     passport.Id,
                     faker.Random.ReplaceNumbers("###-####-###"),
@@ -67,8 +67,8 @@ namespace ServiceTests
                     passport.GetAge(),
                     JobPosition.Security,
                     salary.Id,
-                    dateOnlyFuture2Year,
-                    dateOnlyToday);
+                    dateTimeToday,
+                    dateFuture2Year);
                 await employeeService.AddEmployee(employee);
             });
         }
@@ -85,10 +85,10 @@ namespace ServiceTests
             //Act
             var passport = dataGenerator.GenerationPassport();
             await passportService.AddPassport(passport);
-            var salary = new Models.Currency(400, CurrencyType.Dollar);
+            var salary = new Models.Currency(400, CurrencyType.USD);
             await currencyService.AddCurrency(salary);
-            var dateOnlyToday = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day);
-            var dateOnlyFuture2Year = dateOnlyToday.AddYears(2);
+            var dateTimeToday = DateTime.Today;
+            var dateFuture2Year = dateTimeToday.AddYears(2);
             var randomNumberPhone = faker.Random.ReplaceNumbers("###-####-###");
             var employee = new Employee(
                 passport.Id,
@@ -97,8 +97,8 @@ namespace ServiceTests
                 passport.GetAge(),
                 JobPosition.Security,
                 salary.Id,
-                dateOnlyToday,
-                dateOnlyFuture2Year);
+                dateTimeToday,
+                dateFuture2Year);
             await employeeService.AddEmployee(employee);
             employee.ChangeNumberPhone(faker.Random.ReplaceNumbers("###-####-###"));
             await employeeService.ChangeEmployee(employee);
@@ -123,10 +123,10 @@ namespace ServiceTests
                 //Act
                 var passport = dataGenerator.GenerationPassport();
                 await passportService.AddPassport(passport);
-                var salary = new Models.Currency(400, CurrencyType.Dollar);
+                var salary = new Models.Currency(400, CurrencyType.USD);
                 await currencyService.AddCurrency(salary);
-                var dateOnlyToday = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day);
-                var dateOnlyFuture2Year = dateOnlyToday.AddYears(2);
+                var dateTimeToday = DateTime.Today;
+                var dateFuture2Year = dateTimeToday.AddYears(2);
                 var employee = new Employee(
                     passport.Id,
                     faker.Random.ReplaceNumbers("###-####-###"),
@@ -134,8 +134,8 @@ namespace ServiceTests
                     passport.GetAge(),
                     JobPosition.Security,
                     salary.Id,
-                    dateOnlyToday,
-                    dateOnlyFuture2Year);
+                    dateTimeToday,
+                    dateFuture2Year);
                 await employeeService.AddEmployee(employee);
                 employee.Id = passport.Id;
                 await employeeService.ChangeEmployee(employee);
@@ -154,10 +154,10 @@ namespace ServiceTests
             //Act
             var passport = dataGenerator.GenerationPassport();
             await passportService.AddPassport(passport);
-            var salary = new Models.Currency(400, CurrencyType.Dollar);
+            var salary = new Models.Currency(400, CurrencyType.USD);
             await currencyService.AddCurrency(salary);
-            var dateOnlyToday = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day);
-            var dateOnlyFuture2Year = dateOnlyToday.AddYears(2);
+            var dateTimeToday = DateTime.Today;
+            var dateFuture2Year = dateTimeToday.AddYears(2);
             var employee = new Employee(
                 passport.Id,
                 faker.Random.ReplaceNumbers("###-####-###"),
@@ -165,10 +165,10 @@ namespace ServiceTests
                 passport.GetAge(),
                 JobPosition.Security,
                 salary.Id,
-                dateOnlyToday,
-                dateOnlyFuture2Year);
+                dateTimeToday,
+                dateFuture2Year);
             await employeeService.AddEmployee(employee);
-            await employeeService.DeleteEmployee(employee);
+            await employeeService.DeleteEmployee(employee.Id);
 
             //Assert
             Assert.Null(await employeeService.GetEmployee(employee.Id));

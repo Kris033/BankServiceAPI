@@ -30,9 +30,9 @@ namespace Models.Validations
         public static (bool IsSuccses, string? ErrorMessage) ValidationOnOperationValue(this Currency operationCurrency)
             => operationCurrency.TypeCurrency switch
             {
-                CurrencyType.Euro => operationCurrency.Value > 400 ? (false, "Вы не можете снять более 400 евро за раз") : (true, null),
-                CurrencyType.Dollar => operationCurrency.Value > 500 ? (false, "Вы не можете снять более 500 долларов за раз") : (true, null),
-                CurrencyType.LeiMD => operationCurrency.Value > 9000 ? (false, "Вы не можете снять более 9000 леев за раз") : (true, null),
+                CurrencyType.EUR => operationCurrency.Value > 400 ? (false, "Вы не можете снять более 400 евро за раз") : (true, null),
+                CurrencyType.USD => operationCurrency.Value > 500 ? (false, "Вы не можете снять более 500 долларов за раз") : (true, null),
+                CurrencyType.MDL => operationCurrency.Value > 9000 ? (false, "Вы не можете снять более 9000 леев за раз") : (true, null),
                 _ => throw new InvalidDataException("Такой валюты не существует")
             };
     }
