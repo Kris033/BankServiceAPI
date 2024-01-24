@@ -77,11 +77,13 @@ namespace BankDbConnection.Migrations
                         .HasColumnName("number_phone");
 
                     b.Property<Guid>("PassportId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("passport_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PassportId");
+                    b.HasIndex("PassportId")
+                        .IsUnique();
 
                     b.ToTable("client");
                 });
@@ -133,6 +135,9 @@ namespace BankDbConnection.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmployeeId")
+                        .IsUnique();
+
                     b.ToTable("contract");
                 });
 
@@ -168,16 +173,12 @@ namespace BankDbConnection.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("age");
 
-                    b.Property<Guid?>("ContractId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("contract_id");
-
                     b.Property<Guid>("CurrencyIdSalary")
                         .HasColumnType("uuid")
                         .HasColumnName("currency_id");
 
-                    b.Property<DateOnly>("EndContractDate")
-                        .HasColumnType("date")
+                    b.Property<DateTime>("EndContractDate")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("end_contract_date");
 
                     b.Property<bool>("InBlackList")
@@ -200,15 +201,19 @@ namespace BankDbConnection.Migrations
                         .HasColumnName("number_phone");
 
                     b.Property<Guid>("PassportId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("passport_id");
 
-                    b.Property<DateOnly>("StartWorkDate")
-                        .HasColumnType("date")
+                    b.Property<DateTime>("StartWorkDate")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("start_work_date");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PassportId");
+                    b.HasIndex("CurrencyIdSalary");
+
+                    b.HasIndex("PassportId")
+                        .IsUnique();
 
                     b.ToTable("employee");
                 });
@@ -220,12 +225,12 @@ namespace BankDbConnection.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateOnly>("DateBorn")
-                        .HasColumnType("date")
+                    b.Property<DateTime>("DateBorn")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("date_born");
 
-                    b.Property<DateOnly>("DateGivePassport")
-                        .HasColumnType("date")
+                    b.Property<DateTime>("DateGivePassport")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("date_give_passport");
 
                     b.Property<string>("FirstName")
@@ -274,7 +279,7 @@ namespace BankDbConnection.Migrations
             modelBuilder.Entity("Models.Account", b =>
                 {
                     b.HasOne("Models.Client", "Client")
-                        .WithMany()
+                        .WithMany("Accounts")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -293,23 +298,59 @@ namespace BankDbConnection.Migrations
             modelBuilder.Entity("Models.Client", b =>
                 {
                     b.HasOne("Models.Passport", "Passport")
-                        .WithMany()
-                        .HasForeignKey("PassportId")
+                        .WithOne("Client")
+                        .HasForeignKey("Models.Client", "PassportId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Passport");
                 });
 
-            modelBuilder.Entity("Models.Employee", b =>
+            modelBuilder.Entity("Models.Contract", b =>
                 {
-                    b.HasOne("Models.Passport", "Passport")
-                        .WithMany()
-                        .HasForeignKey("PassportId")
+                    b.HasOne("Models.Employee", "Employee")
+                        .WithOne("Contract")
+                        .HasForeignKey("Models.Contract", "EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("Models.Employee", b =>
+                {
+                    b.HasOne("Models.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyIdSalary")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Passport", "Passport")
+                        .WithOne("Employee")
+                        .HasForeignKey("Models.Employee", "PassportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Currency");
+
                     b.Navigation("Passport");
+                });
+
+            modelBuilder.Entity("Models.Client", b =>
+                {
+                    b.Navigation("Accounts");
+                });
+
+            modelBuilder.Entity("Models.Employee", b =>
+                {
+                    b.Navigation("Contract");
+                });
+
+            modelBuilder.Entity("Models.Passport", b =>
+                {
+                    b.Navigation("Client");
+
+                    b.Navigation("Employee");
                 });
 #pragma warning restore 612, 618
         }

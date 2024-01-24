@@ -13,11 +13,13 @@ namespace Models
             Name = name;
             Age = age;
         }
-        public Guid PassportId { get; set; }
-        public Passport? Passport { get; set; }
         [Key]
         [Column("id")]
         public Guid Id { get; set; }
+        [ForeignKey("Passport")]
+        [Column("passport_id")]
+        public Guid PassportId { get; set; }
+        public Passport? Passport { get; set; }
         [Required]
         [Column("name")]
         public string Name { get; set; } = string.Empty;
@@ -36,7 +38,12 @@ namespace Models
         }
         public override int GetHashCode()
         {
-            return NumberPhone.GetHashCode();
+            return 
+                Id.GetHashCode() +
+                Age + Name.GetHashCode() +
+                NumberPhone.GetHashCode() +
+                InBlackList.GetHashCode() +
+                PassportId.GetHashCode();
         }
         public override bool Equals(object? obj)
         {
@@ -44,9 +51,12 @@ namespace Models
                 return false;
             var person = (Person)obj;
             return 
+                person.Id == Id &&
                 person.Name == Name &&
                 person.Age == Age &&
-                person.NumberPhone == NumberPhone;
+                person.NumberPhone == NumberPhone &&
+                person.InBlackList == person.InBlackList &&
+                person.PassportId == person.PassportId;
         }
     }
 }

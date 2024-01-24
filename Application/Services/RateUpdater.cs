@@ -12,14 +12,14 @@ namespace Services
         {
             ClientService clientService = new ClientService();
             AccountService accountService = new AccountService();
-            var clients = clientService.GetClients().Result;
+            var clients = await clientService.GetClients();
             using var db = new BankContext();
             foreach (var client in clients)
             {
-                var accountsClient = clientService.GetAccounts(client.Id).Result;
+                var accountsClient = await accountService.GetAccountsClient(client.Id);
                 foreach (var account in accountsClient)
                 {
-                    var currencyAccount = await db.Currency.FirstOrDefaultAsync(c => c.Id == account.CurrencyIdAmount);
+                    var currencyAccount = await db.Currency.FirstOrDefaultAsync(c => c.Id == account.CurrencyId);
                     currencyAccount?.ChangeValue(currencyAccount.Value + (currencyAccount.Value * 0.03m));
                     if (currencyAccount != null)
                         account.OnPropertyChanged($"Вам была начисленна процентная ставка 3%. {accountService.GetBalance(currencyAccount)}");

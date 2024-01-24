@@ -13,20 +13,21 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
         private ILogger<PassportController> _logger;
-        [HttpGet("{id}")]
+        [HttpGet]
         public async Task<Passport?> Get(Guid idPassport)
-        {
-            return await new PassportService().GetPassport(idPassport);
-        }
+            => await new PassportService().Get(idPassport);
+        
         [HttpPost]
         public async Task Add(Passport passport)
-        {
-            await new PassportService().AddPassport(passport);
-        }
-        [HttpDelete("{id}")]
-        public async Task Delete(Guid idPassport)
-        {
-            await new PassportService().DeletePassport(idPassport);
-        }
+            => await new PassportService().Add(passport);
+        
+        [HttpPut]
+        public async Task Update(Passport passport)
+            => await new PassportService().Update(passport);
+        
+        [HttpDelete]
+        public async Task Delete(Guid idPassport) 
+            => await new PassportService().Delete(idPassport);
+        
     }
 }

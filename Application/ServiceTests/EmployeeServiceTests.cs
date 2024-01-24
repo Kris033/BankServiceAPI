@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using Models;
 using Models.Enums;
+using Models.Requests;
 using Services;
 using Xunit;
 
@@ -10,35 +11,17 @@ namespace ServiceTests
     {
         
         [Fact]
-        public async void CreateEmployeeInServicePositiveTest()
+        public async Task CreateEmployeeInServicePositiveTest()
         {
             //Arrange
             EmployeeService employeeService = new EmployeeService();
-            PassportService passportService = new PassportService();
-            CurrencyService currencyService = new CurrencyService();
             TestDataGenerator dataGenerator = new TestDataGenerator();
-            Faker faker = new Faker();
 
             //Act
-            var passport = dataGenerator.GenerationPassport();
-            await passportService.AddPassport(passport);
-            var salary = new Models.Currency(400, CurrencyType.USD);
-            await currencyService.AddCurrency(salary);
-            var dateTimeToday = DateTime.Today;
-            var dateFuture2Year = dateTimeToday.AddYears(2);
-            var employee = new Employee(
-                passport.Id,
-                faker.Random.ReplaceNumbers("###-####-###"),
-                passport.GetFullName(),
-                passport.GetAge(),
-                JobPosition.Security,
-                salary.Id,
-                dateTimeToday,
-                dateFuture2Year);
-            await employeeService.AddEmployee(employee);
+            var employee = await dataGenerator.GenerationEmployee();
 
             //Assert
-            Assert.NotNull(await employeeService.GetEmployee(employee.Id));
+            Assert.NotNull(await employeeService.Get(employee.Id));
         }
         [Fact]
         public async Task CreateEmployeeInServiceNegativeTest()
@@ -54,10 +37,8 @@ namespace ServiceTests
             await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => 
             {
                 //Act
-                var passport = dataGenerator.GenerationPassport();
-                await passportService.AddPassport(passport);
-                var salary = new Models.Currency(400, CurrencyType.USD);
-                await currencyService.AddCurrency(salary);
+                var passport = await dataGenerator.GenerationPassport();
+                var salary = await dataGenerator.GenerationCurrency();
                 var dateTimeToday = DateTime.Today;
                 var dateFuture2Year = dateTimeToday.AddYears(2);
                 var employee = new Employee(
@@ -67,9 +48,9 @@ namespace ServiceTests
                     passport.GetAge(),
                     JobPosition.Security,
                     salary.Id,
-                    dateTimeToday,
-                    dateFuture2Year);
-                await employeeService.AddEmployee(employee);
+                    dateFuture2Year,
+                    dateTimeToday);
+                await employeeService.Add(employee);
             });
         }
         [Fact]
@@ -77,68 +58,33 @@ namespace ServiceTests
         {
             //Arrange
             EmployeeService employeeService = new EmployeeService();
-            PassportService passportService = new PassportService();
-            CurrencyService currencyService = new CurrencyService();
             TestDataGenerator dataGenerator = new TestDataGenerator();
             Faker faker = new Faker();
 
             //Act
-            var passport = dataGenerator.GenerationPassport();
-            await passportService.AddPassport(passport);
-            var salary = new Models.Currency(400, CurrencyType.USD);
-            await currencyService.AddCurrency(salary);
-            var dateTimeToday = DateTime.Today;
-            var dateFuture2Year = dateTimeToday.AddYears(2);
-            var randomNumberPhone = faker.Random.ReplaceNumbers("###-####-###");
-            var employee = new Employee(
-                passport.Id,
-                randomNumberPhone,
-                passport.GetFullName(),
-                passport.GetAge(),
-                JobPosition.Security,
-                salary.Id,
-                dateTimeToday,
-                dateFuture2Year);
-            await employeeService.AddEmployee(employee);
+            var employee = await dataGenerator.GenerationEmployee();
+            var oldNumberPhone = employee.NumberPhone;
             employee.ChangeNumberPhone(faker.Random.ReplaceNumbers("###-####-###"));
-            await employeeService.ChangeEmployee(employee);
-            var employeeFromDb = await employeeService.GetEmployee(employee.Id);
+            await employeeService.Update(employee);
+            var employeeFromDb = await employeeService.Get(employee.Id);
 
             //Assert
-            Assert.True(employeeFromDb?.NumberPhone != randomNumberPhone);
+            Assert.True(employeeFromDb?.NumberPhone != oldNumberPhone);
         }
         [Fact]
         public async Task UpdateEmployeeNegativeTest()
         {
             //Arrange
             EmployeeService employeeService = new EmployeeService();
-            PassportService passportService = new PassportService();
-            CurrencyService currencyService = new CurrencyService();
             TestDataGenerator dataGenerator = new TestDataGenerator();
-            Faker faker = new Faker();
 
             //Assert
             await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
                 //Act
-                var passport = dataGenerator.GenerationPassport();
-                await passportService.AddPassport(passport);
-                var salary = new Models.Currency(400, CurrencyType.USD);
-                await currencyService.AddCurrency(salary);
-                var dateTimeToday = DateTime.Today;
-                var dateFuture2Year = dateTimeToday.AddYears(2);
-                var employee = new Employee(
-                    passport.Id,
-                    faker.Random.ReplaceNumbers("###-####-###"),
-                    passport.GetFullName(),
-                    passport.GetAge(),
-                    JobPosition.Security,
-                    salary.Id,
-                    dateTimeToday,
-                    dateFuture2Year);
-                await employeeService.AddEmployee(employee);
-                employee.Id = passport.Id;
-                await employeeService.ChangeEmployee(employee);
+                var employee = await dataGenerator.GenerationEmployee();
+                employee.Id = employee.PassportId;
+                await employeeService.Update(employee);
             });
         }
         [Fact]
@@ -146,32 +92,26 @@ namespace ServiceTests
         {
             //Arrange
             EmployeeService employeeService = new EmployeeService();
-            PassportService passportService = new PassportService();
-            CurrencyService currencyService = new CurrencyService();
             TestDataGenerator dataGenerator = new TestDataGenerator();
-            Faker faker = new Faker();
 
             //Act
-            var passport = dataGenerator.GenerationPassport();
-            await passportService.AddPassport(passport);
-            var salary = new Models.Currency(400, CurrencyType.USD);
-            await currencyService.AddCurrency(salary);
-            var dateTimeToday = DateTime.Today;
-            var dateFuture2Year = dateTimeToday.AddYears(2);
-            var employee = new Employee(
-                passport.Id,
-                faker.Random.ReplaceNumbers("###-####-###"),
-                passport.GetFullName(),
-                passport.GetAge(),
-                JobPosition.Security,
-                salary.Id,
-                dateTimeToday,
-                dateFuture2Year);
-            await employeeService.AddEmployee(employee);
-            await employeeService.DeleteEmployee(employee.Id);
+            var employee = await dataGenerator.GenerationEmployee();
+            await employeeService.Delete(employee.Id);
 
             //Assert
-            Assert.Null(await employeeService.GetEmployee(employee.Id));
+            Assert.Null(await employeeService.Get(employee.Id));
+        }
+        [Fact]
+        public async Task FilterSearchStorageTest()
+        {
+            //Arrange
+            EmployeeService employeeService = new EmployeeService();
+
+            //Act
+            List<Employee> employees = await employeeService.GetEmployees(new GetFilterRequest() { DateBornFrom = new DateTime(1996, 1, 1) });
+
+            //Assert
+            Assert.DoesNotContain(employees, e => e.Age > 28);
         }
     }
 }

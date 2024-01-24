@@ -12,9 +12,10 @@ namespace PracticeWithTypes
         static void Main(string[] args)
         {
             
-            var dataGenerator = new TestDataGenerator();
-            var servicePassport = new PassportService();
-
+            //var dataGenerator = new TestDataGenerator();
+            //var servicePassport = new PassportService();
+            Console.WriteLine("name".GetHashCode());
+            Console.WriteLine("anme".GetHashCode());
             //servicePassport.AddPassport(dataGenerator.GenerationPassport()); 
             //var employees = dataGenerator.GenerationEmployees(1000);
             //var clients = dataGenerator.GenerationClients(1000);

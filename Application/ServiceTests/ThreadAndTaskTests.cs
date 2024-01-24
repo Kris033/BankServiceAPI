@@ -5,6 +5,7 @@ using Models.Requests;
 using Services;
 using Models.Enums;
 using Xunit;
+using Services.Interfaces;
 
 namespace ServiceTests
 {
@@ -14,8 +15,9 @@ namespace ServiceTests
         public void ImportWithThreadClientInDbTest()
         {
             //Arrange
-            ClientService clientService = new ClientService();
-            Mutex mutex = new Mutex(); 
+            IClientService clientService = new ClientService();
+            Mutex mutex1 = new Mutex(); 
+            Mutex mutex2 = new Mutex();
             Thread thread1 = new Thread(ImportClients);
             Thread thread2 = new Thread(ExportClients);
 
@@ -36,27 +38,27 @@ namespace ServiceTests
             async void ImportClients()
             {
                 Thread.Sleep(100);
-                mutex.WaitOne();
+                mutex1.WaitOne();
                 ExportClientsService exportService = new ExportClientsService(@"..\..\..\..\ExportTool\ExcelInfo", "clients.csv");
                 
-                await exportService.ImportClientsFromCsv();
-                mutex.ReleaseMutex();
+                await exportService.ImportFromCsvToDb();
+                mutex1.ReleaseMutex();
             }
             async void ExportClients()
             {
                 Thread.Sleep(90);
-                mutex.WaitOne();
+                mutex2.WaitOne();
                 ExportClientsService exportService = new ExportClientsService(@"..\..\..\..\ExportTool\ExcelInfo", "clientsFromDb.csv");
                 
-                await exportService.ExportClientsForCsv(await clientService.GetClients());
-                mutex.ReleaseMutex();
+                await exportService.ExportForCsv(await clientService.GetClients());
+                mutex2.ReleaseMutex();
             }
         }
         [Fact]
         public void ParallelPutCurrencyInAccount()
         {
             //Arrange
-            CurrencyService currencyService = new CurrencyService();
+            ICurrencyService currencyService = new CurrencyService();
             Currency currency = new Currency(0, Models.Enums.CurrencyType.USD);
             Faker faker = new Faker();
             Mutex mutex = new Mutex();
@@ -99,37 +101,39 @@ namespace ServiceTests
         {
             //Arrange
             RateUpdater rateUpdater = new RateUpdater();
-            ClientService clientService = new ClientService();
+            IClientService clientService = new ClientService();
+            IAccountService accountService = new AccountService();
             CurrencyService currencyService = new CurrencyService();
 
             //Act
             var clients = await clientService.GetClients();
             var client = clients.First();
-            var accounts = await clientService.GetAccounts(client.Id);
+            var accounts = await accountService.GetAccountsClient(client.Id);
             var account = accounts.First();
-            var currencyAccount = await currencyService.GetCurrency(account.CurrencyIdAmount);
+            var currencyAccount = await currencyService.Get(account.CurrencyId);
             await rateUpdater.InterestRateCalculation();
-            var newInformationCurrencyAccount = await currencyService.GetCurrency(account.CurrencyIdAmount);
+            var newInformationCurrencyAccount = await currencyService.Get(account.CurrencyId);
 
             //Assert
             Assert.NotEqual(newInformationCurrencyAccount!.Value, currencyAccount!.Value);
         }
         [Fact]
-        public async void CashDispanserTest()
+        public async Task CashDispanserTest()
         {
             //Arrange
             Dictionary<Account, OperationAccountRequest> accountWithRequestOperation = new Dictionary<Account, OperationAccountRequest>();
             List<Currency> accountsCurrencyBefore;
             List<Currency> accountsCurrencyAfter;
-            ClientService clientService = new ClientService();
-            CurrencyService currencyService = new CurrencyService();
+            IClientService clientService = new ClientService();
+            IAccountService accountService = new AccountService();
+            ICurrencyService currencyService = new CurrencyService();
             CashDispanserService cashDispanserService;
             Faker faker = new Faker();
 
             //Act
             var clients = await clientService.GetClients();
             var client = clients.First();
-            var accounts = await clientService.GetAccounts(client.Id);
+            var accounts = await accountService.GetAccountsClient(client.Id);
             accountsCurrencyBefore = await GetListCurrency(accounts);
             for (int i = 0; i < accounts.Count; i++)
             {
@@ -144,22 +148,25 @@ namespace ServiceTests
             }
             cashDispanserService =
                 new CashDispanserService(accountWithRequestOperation);
-            var listResponse = cashDispanserService.CashingOutClients();
-            accountsCurrencyAfter = await GetListCurrency(accounts);
+            var listResponse = await cashDispanserService.CashingOutClients();
+            accountsCurrencyAfter = await GetListCurrency(await accountService.GetAccountsClient(client.Id));
             foreach (var item in accountWithRequestOperation)
             {
-                if (item.Value.OperationAccount == TypeOperationAccount.Withdraw 
-                    && accountsCurrencyBefore.First(c => c.Id == item.Key.CurrencyIdAmount).Value 
-                    < item.Value.Currency!.Value)
-                    continue;
+                if (item.Value.OperationAccount == TypeOperationAccount.Withdraw)
+                {
+                    var account = accountsCurrencyBefore.First(c => c.Id == item.Key.CurrencyId);
+                    if (account.TypeCurrency != item.Value.Currency?.TypeCurrency
+                        || account.Value < item.Value.Currency?.Value)
+                        continue;
+                }
                 switch (item.Value.OperationAccount)
                 {
                     case TypeOperationAccount.Withdraw:
                     case TypeOperationAccount.Put:
                         //Assert
                         Assert.NotEqual(
-                            accountsCurrencyBefore.First(c => c.Id == item.Key.CurrencyIdAmount).Value,
-                            accountsCurrencyAfter.First(c => c.Id == item.Key.CurrencyIdAmount).Value);
+                            accountsCurrencyBefore.First(c => c.Id == item.Key.CurrencyId).Value,
+                            accountsCurrencyAfter.First(c => c.Id == item.Key.CurrencyId).Value);
                         break;
                 }
             }
@@ -168,7 +175,7 @@ namespace ServiceTests
                 var currencysAmount = new List<Currency>();
                 foreach (var account in accounts)
                 {
-                    currencysAmount.Add(await currencyService.GetCurrency(account.CurrencyIdAmount));
+                    currencysAmount.Add(await currencyService.Get(account.CurrencyId));
                 }
                 return currencysAmount;
             }

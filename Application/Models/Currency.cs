@@ -20,11 +20,14 @@ namespace Models
         public decimal Value { get; private set; }
         [Column("type_currency")]
         public CurrencyType TypeCurrency { get; set; }
+
         public void ChangeValue(decimal valueNow)
             => Value = Math.Round(valueNow, 2);
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return Id.GetHashCode()
+                + TypeCurrency.GetHashCode()
+                + Value.GetHashCode();
         }
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
@@ -32,6 +35,7 @@ namespace Models
                 return false;
             var currency = (Currency)obj;
             return 
+                currency.Id == Id &&
                 currency.TypeCurrency == currency.TypeCurrency &&
                 currency.Value == currency.Value;
         }

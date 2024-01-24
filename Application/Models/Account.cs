@@ -7,21 +7,21 @@ namespace Models
     [Table("account")]
     public class Account : INotifyPropertyChanged, IComparable<Account>
     {
-        public Account(Guid clientId, string accountNumber, Guid currencyIdAmount)
+        public Account(Guid clientId, string accountNumber, Guid currencyId)
         {
             ClientId = clientId;
             AccountNumber = accountNumber;
-            CurrencyIdAmount = currencyIdAmount;
+            CurrencyId = currencyId;
         }
         [Key]
         [Column("id")]
         public Guid Id { get; set; }
         
         [Column("account_number")]
-        public string AccountNumber { get; private set; }
+        public string AccountNumber { get; set; }
         [ForeignKey("Currency")]
         [Column("currency_id")]
-        public Guid CurrencyIdAmount { get; private set; }
+        public Guid CurrencyId { get; set; }
         public Currency? Currency { get; set; }
         [ForeignKey("Client")]
         [Column("client_id")]
@@ -36,7 +36,14 @@ namespace Models
             PropertyChanged?.Invoke(this, 
                 new PropertyChangedEventArgs(message));
         }
-        public override int GetHashCode() => AccountNumber.GetHashCode();
+        public override int GetHashCode()
+        {
+            return 
+                Id.GetHashCode() +
+                AccountNumber.GetHashCode() +
+                CurrencyId.GetHashCode() +
+                ClientId.GetHashCode();
+        }
         public override bool Equals(object? obj)
         {
             if(obj == null || obj is not Account) 
@@ -44,7 +51,9 @@ namespace Models
             var account = (Account)obj;
             return 
                 account.AccountNumber == AccountNumber &&
-                account.Id == Id;
+                account.Id == Id &&
+                account.ClientId == ClientId &&
+                account.CurrencyId == CurrencyId;
         }
 
         public int CompareTo(Account? account)

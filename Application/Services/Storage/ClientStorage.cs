@@ -31,28 +31,32 @@ namespace Services.Storage
             Data.Add(client, new List<Account>());
         }
 
-        public void Update(Client client)
+        public async void Update(Client client)
         {
-            var foundClient = Data.First(ca => ca.Key.NumberPhone == client.NumberPhone);
-            foundClient.Value.ForEach(a => 
+            var foundClient = await GetClientById(client.Id);
+            if(foundClient != null)
             {
-                a.ClientId = client.Id;
-            });
-            if (Data.Remove(foundClient.Key))
-                Data.Add(client, foundClient.Value);
+                List<Account> listAccounts = Data[foundClient];
+                listAccounts.ForEach(account =>
+                {
+                    account.ClientId = client.Id;
+                });
+                if (Data.Remove(foundClient))
+                    Data.Add(client, listAccounts);
+            }
         }
         public void Delete(Client client)
         {
             Data.Remove(client);
         }
 
-        public async void AddAccount(Account account)
+        public async Task AddAccount(Account account)
         {
             var client = await GetClientById(account.ClientId);
             if(client != null) Data[client].Add(account);
         }
 
-        public async void UpdateAccount(Account account)
+        public async Task UpdateAccount(Account account)
         {
             var client = await GetClientById(account.ClientId);
             if (client != null) 
@@ -62,7 +66,7 @@ namespace Services.Storage
                 });
         }
 
-        public async void DeleteAccount(Account account)
+        public async Task DeleteAccount(Account account)
         {
             var client = await GetClientById(account.ClientId);
             if (client != null) Data[client].Remove(account);

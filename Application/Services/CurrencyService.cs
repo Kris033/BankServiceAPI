@@ -3,12 +3,13 @@ using Models.Validations;
 using Models;
 using Microsoft.EntityFrameworkCore;
 using Models.Enums;
-using Models.Response;
+using Models.Responses;
 using Newtonsoft.Json;
+using Services.Interfaces;
 
 namespace Services
 {
-    public class CurrencyService
+    public class CurrencyService : ICurrencyService
     {
         public async Task ExChange(Currency currency, CurrencyType currencyTypeExChange)
         {
@@ -24,24 +25,19 @@ namespace Services
                 currency.TypeCurrency = currencyTypeExChange;
             }
         }
-        public async Task<Currency?> GetCurrency(Guid id)
+        public async Task<Currency?> Get(Guid id)
         {
             using var db = new BankContext();
             return await db.Currency.FirstOrDefaultAsync(c => c.Id == id);
         }
-        public async Task<Currency?> GetCurrency(Currency currency)
-        {
-            using var db = new BankContext();
-            return await db.Currency.FindAsync(currency.Id);
-        }
-        public async Task AddCurrency(Currency currency)
+        public async Task Add(Currency currency)
         {
             currency.Validation();
             using var db = new BankContext();
             db.Currency.Add(currency);
             await db.SaveChangesAsync();
         }
-        public async Task UpdateCurrency(Currency currency)
+        public async Task Update(Currency currency)
         {
             currency.Validation();
             using var db = new BankContext();
@@ -50,11 +46,11 @@ namespace Services
             db.Currency.Update(currency);
             await db.SaveChangesAsync();
         }
-        public async Task DeleteCurrency(Guid guid)
+        public async Task Delete(Guid idCurrency)
         {
             using var db = new BankContext();
             var currency = 
-                await db.Currency.FirstOrDefaultAsync(c => c.Id == guid) 
+                await db.Currency.FirstOrDefaultAsync(c => c.Id == idCurrency) 
                 ?? throw new ArgumentNullException("Идентификатор удаляемой валюты, не был найден");
             db.Currency.Remove(currency);
             await db.SaveChangesAsync();

@@ -2,31 +2,32 @@
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Validations;
+using Services.Interfaces;
 
 namespace Services
 {
-    public class PassportService
+    public class PassportService : IPassportService
     {
-        public async Task<Passport?> GetPassport(string numberPassport)
-        {
-            using var db = new BankContext();
-            var passport = await db.Passport.FirstOrDefaultAsync(p => p.NumberPassport.Contains(numberPassport));
-            return passport;
-        }
-        public async Task<Passport?> GetPassport(Guid idPassport) 
+        public async Task<Passport?> Get(Guid idPassport) 
         {
             using var db = new BankContext();
             return await db.Passport.FirstOrDefaultAsync(p => p.Id == idPassport);
         }
-        public async Task AddPassport(Passport passport)
+        public async Task Add(Passport passport)
         {
             passport.Validation();
             using var db = new BankContext();
             await db.Passport.AddAsync(passport);
             await db.SaveChangesAsync();
-            
         }
-        public async Task DeletePassport(Guid id)
+        public async Task Update(Passport passport)
+        {
+            passport.Validation();
+            using var db = new BankContext();
+            db.Passport.Update(passport);
+            await db.SaveChangesAsync();
+        }
+        public async Task Delete(Guid id)
         {
             using var db = new BankContext();
             var passport = await db.Passport.FirstOrDefaultAsync(p => p.Id == id);

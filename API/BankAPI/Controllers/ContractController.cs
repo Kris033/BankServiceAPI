@@ -14,25 +14,25 @@ namespace BankAPI.Controllers
         }
         private ILogger<ContractController> _logger;
 
-        [HttpGet("{id}")]
+        [HttpGet]
         public async Task<Contract?> Get(Guid idContract)
         {
-            return await new ContractService().GetContract(idContract);
+            return await new ContractService().Get(idContract);
         }
         [HttpPost]
         public async Task Add(Contract contract)
         {
-            await new ContractService().AddContract(contract);
+            await new ContractService().Add(contract);
         }
         [HttpPut]
         public async Task Update(Contract contract)
         {
-            await new ContractService().UpdateContract(contract);
+            await new ContractService().Update(contract);
         }
-        [HttpDelete("{id}")]
+        [HttpDelete]
         public async Task Delete(Guid idContract)
         {
-            await new ContractService().DeleteContract(idContract);
+            await new ContractService().Delete(idContract);
         }
     }
 }

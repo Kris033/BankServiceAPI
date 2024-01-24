@@ -23,8 +23,7 @@ namespace Models
             StartWorkDate = startWorkDate;
             EndContractDate = endContractDate;
         }
-        [Column("contract_id")]
-        public Guid? ContractId { get; set; }
+        public Contract? Contract { get; set; }
         [Required]
         [Column("start_work_date")]
         public DateTime StartWorkDate { get; set; }
@@ -33,13 +32,23 @@ namespace Models
         public DateTime EndContractDate { get; set; }
         [Required]
         [Column("job_position_type")]
-        public JobPosition JobPositionType { get; private set; }
-        [ForeignKey("CurrencyId")]
+        public JobPosition JobPositionType { get; set; }
+        [ForeignKey("Currency")]
         [Column("currency_id")]
-        public Guid CurrencyIdSalary { get; private set; }
+        public Guid CurrencyIdSalary { get; set; }
+        public Currency? Currency { get; set; }
         public override int GetHashCode()
         {
-            return NumberPhone.GetHashCode();
+            return 
+                Id.GetHashCode() +
+                Age + Name.GetHashCode() +
+                NumberPhone.GetHashCode() + 
+                InBlackList.GetHashCode() +
+                PassportId.GetHashCode() +
+                JobPositionType.GetHashCode() +
+                CurrencyIdSalary.GetHashCode() +
+                StartWorkDate.GetHashCode() +
+                EndContractDate.GetHashCode();
         }
         public override bool Equals(object? obj)
         {
@@ -47,9 +56,15 @@ namespace Models
                 return false;
             var employee = (Employee)obj;
             return 
+                employee.Id == Id &&
                 employee.Name == Name &&
                 employee.Age == employee.Age &&
-                employee.NumberPhone == employee.NumberPhone;
+                employee.NumberPhone == employee.NumberPhone &&
+                employee.InBlackList == employee.InBlackList &&
+                employee.PassportId == employee.PassportId &&
+                employee.CurrencyIdSalary == employee.CurrencyIdSalary &&
+                employee.StartWorkDate == StartWorkDate &&
+                employee.EndContractDate == EndContractDate;
         }
     }
 }

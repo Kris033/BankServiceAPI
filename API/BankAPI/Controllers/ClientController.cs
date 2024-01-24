@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ExportTool;
+using Microsoft.AspNetCore.Mvc;
 using Models;
+using Models.Exports;
 using Models.Requests;
 using Services;
 
@@ -14,30 +16,27 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
         private ILogger<ClientController> _logger;
+        
         [HttpGet]
-        public async Task<IEnumerable<Client>> GetClients([FromQuery] GetFilterRequest? filterRequest = null)
+        public async Task<ClientExportModel?> Get(Guid idClient)
         {
-            return await new ClientService().GetClients(filterRequest);
-        }
-        [HttpGet("{id}")]
-        public async Task<Client?> Get(Guid idClient)
-        {
-            return await new ClientService().GetClient(idClient);
-        }
-        [HttpPut]
-        public async Task Update(Client client)
-        {
-            await new ClientService().UpdateClient(client);
+            return await new ExportClientsService()
+                .ConvertatorToExportModel(await new ClientService().Get(idClient));
         }
         [HttpPost]
         public async Task Add(Client client)
         {
-            await new ClientService().AddClient(client);
+            await new ClientService().Add(client);
         }
-        [HttpDelete("{id}")]
+        [HttpPut]
+        public async Task Update(Client client)
+        {
+            await new ClientService().Update(client);
+        }
+        [HttpDelete]
         public async Task Delete(Guid idClient)
         {
-            await new ClientService().DeleteClient(idClient);
+            await new ClientService().Delete(idClient);
         }
     }
 }

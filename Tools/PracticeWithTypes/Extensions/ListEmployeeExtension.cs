@@ -10,7 +10,7 @@ namespace PracticeWithTypes.Extensions
         public static void UpdateContractEmployees(this List<Employee> listEmployee)
         {
             var contractService = new ContractService();
-            listEmployee.ForEach(async e => await contractService.UpdateContract(new Contract(
+            listEmployee.ForEach(async e => await contractService.Update(new Contract(
                     e.Id,
                     "SimpleBank",
                     "c. Cishinau, str. Stefan, h. 2043",
@@ -23,8 +23,6 @@ namespace PracticeWithTypes.Extensions
         public static async Task UpdateSalaryDirectors(this List<Employee> listEmployee, BankService bankService)
         {
             Currency salaryDirectors = await bankService.CalculationSalaryBetweenDirectors(
-                listEmployee.Count(
-                    e => e.JobPositionType == JobPosition.Director),
                 new Currency(800000, CurrencyType.MDL),
                 new Currency(150000, CurrencyType.MDL));
             var currencyService = new CurrencyService();
@@ -32,10 +30,10 @@ namespace PracticeWithTypes.Extensions
             {
                 if (e.JobPositionType == JobPosition.Director)
                 {
-                    var currency = await currencyService.GetCurrency(e.CurrencyIdSalary);
+                    var currency = await currencyService.Get(e.CurrencyIdSalary);
                     if (salaryDirectors.TypeCurrency != currency!.TypeCurrency)
                         await currencyService.ExChange(currency, salaryDirectors.TypeCurrency);
-                    await currencyService.UpdateCurrency(salaryDirectors);
+                    await currencyService.Update(salaryDirectors);
                 }
             });
         }

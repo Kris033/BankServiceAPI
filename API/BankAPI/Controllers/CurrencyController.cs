@@ -13,25 +13,25 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
         private ILogger<CurrencyController> _logger;
-        [HttpGet("{id}")]
+        [HttpGet]
         public async Task<Currency?> Get(Guid idCurrency)
         {
-            return await new CurrencyService().GetCurrency(idCurrency);
+            return await new CurrencyService().Get(idCurrency);
         }
         [HttpPost]
         public async Task Add(Currency currency)
         {
-            await new CurrencyService().AddCurrency(currency);
+            await new CurrencyService().Add(currency);
         }
         [HttpPut]
         public async Task Update(Currency currency)
         {
-            await new CurrencyService().UpdateCurrency(currency);
+            await new CurrencyService().Update(currency);
         }
-        [HttpDelete("{id}")]
+        [HttpDelete]
         public async Task Delete(Guid idCurrency)
         {
-            await new CurrencyService().DeleteCurrency(idCurrency);
+            await new CurrencyService().Delete(idCurrency);
         }
     }
 }

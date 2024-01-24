@@ -13,7 +13,10 @@ namespace BankDbConnection
         public DbSet<Currency> Currency { get; set; }
         public DbSet<Passport> Passport { get; set; }
         public DbSet<Contract> Contract { get; set; }
-        public BankContext() { }
+        public BankContext() 
+        {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=bank;Username=postgres;Password=");

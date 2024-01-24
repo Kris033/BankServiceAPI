@@ -5,8 +5,8 @@ namespace Services.Storage
     public interface IClientStorage : IStorage<Client>
     {
         Dictionary<Client, List<Account>> Data { get; }
-        void AddAccount(Account account);
-        void UpdateAccount(Account account);
-        void DeleteAccount(Account account);
+        Task AddAccount(Account account);
+        Task UpdateAccount(Account account);
+        Task DeleteAccount(Account account);
     }
 }

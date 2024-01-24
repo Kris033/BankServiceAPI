@@ -1,38 +1,41 @@
 ﻿using CsvHelper.Configuration;
 using CsvHelper;
 using Models;
+using Models.Exports;
 using Newtonsoft.Json;
 using Services;
 using System.Globalization;
 using System.Text;
 using Models.Enums;
+using Services.Interfaces;
 
 namespace ExportTool
 {
-    public class ExportEmployeeService
+    public class ExportEmployeeService : IExportService<Employee, EmployeeExportModel>
     {
-        private string _pathToDirectory { get; set; }
-        private string _csvFileName { get; set; }
+        public string PathToDirectory { get; set; }
+        public string FileName { get; set; }
         public ExportEmployeeService(string pathToDirectory, string csvFileName)
         {
-            _pathToDirectory = pathToDirectory;
-            _csvFileName = csvFileName;
+            PathToDirectory = pathToDirectory;
+            FileName = csvFileName;
         }
-        public async Task ExportEmployeesForCsv(List<Employee> employees)
+        public ExportEmployeeService() { }
+        public async Task ExportForCsv(List<Employee> employees)
         {
-            var listEmployee = ConvertatorEmployees(employees);
-            DirectoryInfo dirInfo = new DirectoryInfo(_pathToDirectory);
+            var listEmployee = await ConvertatorToExportListModel(employees);
+            DirectoryInfo dirInfo = new DirectoryInfo(PathToDirectory);
             if (!dirInfo.Exists) dirInfo.Create();
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(PathToDirectory, FileName);
             using var fileStream = new FileStream(fullPath, FileMode.Create);
             using var streamWriter = new StreamWriter(fileStream, Encoding.UTF8);
             using var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
             await csvWriter.WriteRecordsAsync(listEmployee);
             await csvWriter.FlushAsync();
         }
-        public async Task ImportEmployeesFromCsv()
+        public async Task ImportFromCsvToDb()
         {
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(PathToDirectory, FileName);
             var config = new CsvConfiguration(CultureInfo.InvariantCulture);
             using var streamReader = new StreamReader(fullPath);
             using var csvReader = new CsvReader(streamReader, config);
@@ -54,61 +57,60 @@ namespace ExportTool
                     csvReader.GetField<DateTime>("EndDateWork"))
                 {
                     InBlackList = csvReader.GetField<bool>("InBlackList"),
-                    ContractId = csvReader.GetField<Guid?>("Id")
+                    Id = csvReader.GetField<Guid>("Id")
                 };
                 employeeList.Add(employee);
             }
+
             foreach (var employeeCsv in employeeList)
-            {
                 if (!clientsListFromDb.Any(c => c.PassportId == employeeCsv.PassportId))
-                {
-                    await employeeService.AddEmployee(employeeCsv);
-                }
-            }
+                    await employeeService.Add(employeeCsv);
         }
-        public async Task<string> ExportEmployeesToJson(List<Employee> employees)
+        public async Task<string> ExportForJson(List<Employee> employees)
         {
-            DirectoryInfo dirInfo = new DirectoryInfo(_pathToDirectory);
+            var listEmployee = await ConvertatorToExportListModel(employees);
+            DirectoryInfo dirInfo = new DirectoryInfo(PathToDirectory);
             if (!dirInfo.Exists) dirInfo.Create();
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(PathToDirectory, FileName);
             using var fileStream = new FileStream(fullPath, FileMode.Create);
             using var streamWriter = new StreamWriter(fileStream, Encoding.UTF8);
-            var jsonEmployees = JsonConvert.SerializeObject(employees);
+            var jsonEmployees = JsonConvert.SerializeObject(listEmployee);
             await streamWriter.WriteLineAsync(jsonEmployees);
             return jsonEmployees;
         }
-        public async Task ImportClientsFromJson(string employeesJson)
+        public async Task ImportFromJsonToDb(string employeesJson)
         {
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(PathToDirectory, FileName);
             using var streamReader = new StreamReader(fullPath);
             var employeeService = new EmployeeService();
             var employeesListFromDb = await employeeService.GetEmployees();
-            var clients = JsonConvert.DeserializeObject<Employee[]>(employeesJson);
-            foreach (var client in clients)
-            {
-                if (!employeesListFromDb.Any(c => c.PassportId == client.PassportId))
-                {
-                    await employeeService.AddEmployee(client);
-                }
-            }
+            var employees = JsonConvert.DeserializeObject<Employee[]>(employeesJson);
+
+            foreach (var employee in employees!)
+                if (!employeesListFromDb.Any(c => c.PassportId == employee.PassportId))
+                    await employeeService.Add(employee);
         }
-        private List<EmployeeModelCsv> ConvertatorEmployees(List<Employee> employees)
+        public async Task<EmployeeExportModel> ConvertatorToExportModel(Employee employee)
+            => new EmployeeExportModel(
+                    employee.Name,
+                    employee.Age,
+                    employee.NumberPhone,
+                    employee.InBlackList,
+                    employee.JobPositionType,
+                    await new CurrencyService().Get(employee.CurrencyIdSalary),
+                    employee.StartWorkDate,
+                    employee.EndContractDate,
+                    employee.PassportId)
+            { Id = employee.Id };
+        
+        public async Task<List<EmployeeExportModel>> ConvertatorToExportListModel(List<Employee> employees)
         {
-            CurrencyService currencyService = new CurrencyService();
-            return employees.Select(async e => 
-                new EmployeeModelCsv(
-                    e.Name,
-                    e.Age,
-                    e.NumberPhone,
-                    e.InBlackList,
-                    e.JobPositionType,
-                    await currencyService.GetCurrency(e.CurrencyIdSalary),
-                    e.StartWorkDate,
-                    e.EndContractDate,
-                    e.ContractId,
-                    e.PassportId))
-                .Select(employeeResult => employeeResult.Result)
-                .ToList();
+            List<EmployeeExportModel> employeeExports = new List<EmployeeExportModel>();
+            foreach (var employee in employees)
+                employeeExports
+                    .Add(await ConvertatorToExportModel(employee));
+            return employeeExports;
         }
+
     }
 }

@@ -61,6 +61,8 @@ namespace Models
         public DateTime DateGivePassport { get; private set; }
         [Column("location_residence")]
         public string? LocationResidence { get; private set; }
+        public Employee? Employee { get; set; }
+        public Client? Client { get; set; }
         public string GetFullInformation()
         {
             return $"Фамилия: {LastName}\n" +

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Enums;
 using Models.Requests;
-using Models.Response;
+using Models.Responses;
 
 namespace Services
 {
@@ -25,15 +25,15 @@ namespace Services
             {
                 Task task = item.Value.OperationAccount switch
                 {
-                    TypeOperationAccount.Put => new Task(async () =>
+                    TypeOperationAccount.Put => Task.Run(async () =>
                     {
                         if (item.Value.Currency == null)
                             cancellationTokenSource.Cancel();
-                        if (cancellationToken.IsCancellationRequested)
+                        if (cancellationToken.IsCancellationRequested) 
                             return;
                         await accountService.Put(item.Key.Id, item.Value.Currency!);
                     }, cancellationToken),
-                    TypeOperationAccount.Withdraw => new Task(async () =>
+                    TypeOperationAccount.Withdraw => Task.Run(async () =>
                     {
                         if (item.Value.Currency == null)
                             cancellationTokenSource.Cancel();
@@ -41,19 +41,18 @@ namespace Services
                             return;
                         await accountService.Remove(item.Key.Id, item.Value.Currency!);
                     }, cancellationToken),
-                    TypeOperationAccount.CheckBalance => new Task(async () =>
+                    TypeOperationAccount.CheckBalance => Task.Run(async () =>
                     {
                         using var db = new BankContext();
-                        var currencyAccount = await db.Currency.FirstOrDefaultAsync(c => c.Id == item.Key.CurrencyIdAmount);
+                        var currencyAccount = await db.Currency.FirstOrDefaultAsync(c => c.Id == item.Key.CurrencyId);
                         if (currencyAccount == null)
                             cancellationTokenSource.Cancel();
                         if (cancellationToken.IsCancellationRequested)
                             return;
                         accountsResponses.Add(new GetAccountResponse(item.Key.Id, currencyAccount!));
                     }, cancellationToken),
-                    _ => new Task(() => { })
+                    _ => throw new ArgumentOutOfRangeException("Такого типа операции не существует")
                 };
-                task.Start();
                 await task.WaitAsync(cancellationToken);
             }
             return accountsResponses;

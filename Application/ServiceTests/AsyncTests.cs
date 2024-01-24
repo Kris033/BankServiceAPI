@@ -5,7 +5,7 @@ namespace ServiceTests
     public class AsyncTests
     {
         [Fact]
-        public async void TestAsync()
+        public async Task TestAsync()
         {
             Random rnd = new Random();
             ThreadPool.SetMaxThreads(10, 10);
@@ -20,7 +20,7 @@ namespace ServiceTests
                 tasks[i] = new Task(() =>
                 {
                     Console.WriteLine($"Задача №{i} начала работу в пуле {Task.CurrentId}");
-                    Thread.Sleep(rnd.Next(1, 21) * 1000);
+                    Thread.Sleep(rnd.Next(1, 5) * 1000);
                     Console.WriteLine($"Закончил работать пул {Task.CurrentId}");
                 });
                 tasks[i].Start();

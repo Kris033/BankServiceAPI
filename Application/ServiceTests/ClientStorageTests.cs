@@ -1,10 +1,9 @@
 ﻿using Bogus;
 using Models;
-using Models.Enums;
 using Models.Requests;
 using Services;
+using Services.Interfaces;
 using Services.Storage;
-using System.Security.Principal;
 using Xunit;
 
 namespace ServiceTests
@@ -17,17 +16,13 @@ namespace ServiceTests
             //Arrange
             IClientStorage clientStorage = new ClientStorage();
             TestDataGenerator dataGenerator = new TestDataGenerator();
-            ClientService clientService = new ClientService();
+            IClientService clientService = new ClientService();
             GetFilterRequest request = new GetFilterRequest() { CountItem = 1 };
 
             //Act
             var clients = await clientService.GetClients(request);
-            var client = clients.FirstOrDefault();
-            if (client == null)
-            {
-                clients = await dataGenerator.GenerationClients(1);
-                client = clients.First();
-            }
+            var client = clients.FirstOrDefault()
+                ?? await dataGenerator.GenerationClient();
             clientStorage.Add(client);
 
             //Assert
@@ -39,18 +34,14 @@ namespace ServiceTests
             //Arrange
             TestDataGenerator dataGenerator = new TestDataGenerator();
             IClientStorage clientStorage = new ClientStorage();
-            ClientService clientService = new ClientService();
+            IClientService clientService = new ClientService();
             GetFilterRequest request = new GetFilterRequest() { CountItem = 1 };
             Faker faker = new Faker();
 
             //Act
             var clients = await clientService.GetClients(request);
-            var client = clients.FirstOrDefault();
-            if (client == null)
-            {
-                clients = await dataGenerator.GenerationClients(1);
-                client = clients.First();
-            }
+            var client = clients.FirstOrDefault()
+                ?? await dataGenerator.GenerationClient();
             clientStorage.Add(client);
             client.ChangeNumberPhone(faker.Random.ReplaceNumbers("###-####-###"));
             clientStorage.Update(client);
@@ -64,17 +55,13 @@ namespace ServiceTests
             //Arrange
             TestDataGenerator dataGenerator = new TestDataGenerator();
             IClientStorage clientStorage = new ClientStorage();
-            ClientService clientService = new ClientService();
+            IClientService clientService = new ClientService();
             GetFilterRequest request = new GetFilterRequest() { CountItem = 1 };
 
             //Act
             var clients = await clientService.GetClients(request);
-            var client = clients.FirstOrDefault();
-            if (client == null)
-            {
-                clients = await dataGenerator.GenerationClients(1);
-                client = clients.First();
-            }
+            var client = clients.FirstOrDefault()
+                ?? await dataGenerator.GenerationClient();
             clientStorage.Add(client);
             clientStorage.Delete(client);
 
@@ -87,26 +74,19 @@ namespace ServiceTests
             //Arrange
             TestDataGenerator dataGenerator = new TestDataGenerator();
             IClientStorage clientStorage = new ClientStorage();
-            ClientService clientService = new ClientService();
+            IClientService clientService = new ClientService();
+            IAccountService accountService = new AccountService();
             GetFilterRequest request = new GetFilterRequest() { CountItem = 1 };
 
             //Act
             var clients = await clientService.GetClients(request);
-            var client = clients.FirstOrDefault();
-            if (client == null)
-            {
-                clients = await dataGenerator.GenerationClients(1);
-                client = clients.First();
-            }
-            var accountsClient = await clientService.GetAccounts(client.Id);
-            var accountClient = accountsClient.FirstOrDefault();
-            if (accountClient == null) 
-            {
-                accountsClient = await dataGenerator.GenerationAccounts(1, client);
-                accountClient = accountsClient.First();
-            }
+            var client = clients.FirstOrDefault()
+                ?? await dataGenerator.GenerationClient();
+            var accountsClient = await accountService.GetAccountsClient(client.Id);
+            var accountClient = accountsClient.FirstOrDefault()
+                ?? await dataGenerator.GenerationAccount(client);
             clientStorage.Add(client);
-            clientStorage.AddAccount(accountClient);
+            await clientStorage.AddAccount(accountClient);
 
             //Assert
             Assert.Contains(clientStorage.Data.Values, accountList => accountList.Any(a => a.Equals(accountClient)));
@@ -117,34 +97,27 @@ namespace ServiceTests
             //Arrange
             TestDataGenerator dataGenerator = new TestDataGenerator();
             IClientStorage clientStorage = new ClientStorage();
-            ClientService clientService = new ClientService();
+            IAccountService accountService = new AccountService();
+            IClientService clientService = new ClientService();
             GetFilterRequest request = new GetFilterRequest() { CountItem = 1 };
             Faker faker = new Faker();
 
             //Act
             var clients = await clientService.GetClients(request);
-            var client = clients.FirstOrDefault();
-            if (client == null)
-            {
-                clients = await dataGenerator.GenerationClients(1);
-                client = clients.First();
-            }
-            var accountsClient = await clientService.GetAccounts(client.Id);
-            var accountClient = accountsClient.FirstOrDefault();
-            if (accountClient == null)
-            {
-                accountsClient = await dataGenerator.GenerationAccounts(1, client);
-                accountClient = accountsClient.First();
-            }
+            var client = clients.FirstOrDefault()
+                ?? await dataGenerator.GenerationClient();
+            var accountsClient = await accountService.GetAccountsClient(client.Id);
+            var accountClient = accountsClient.FirstOrDefault()
+                ?? await dataGenerator.GenerationAccount(client);
             clientStorage.Add(client);
-            clientStorage.AddAccount(accountClient);
+            await clientStorage.AddAccount(accountClient);
             Account newAccount = new Account(
                 accountClient.ClientId,
                 "2432 2132 4555 2134",
-                accountClient.CurrencyIdAmount)
+                accountClient.CurrencyId)
             { Id = accountClient.Id };
-            await clientService.ChangeAccountClient(newAccount);
-            clientStorage.UpdateAccount(newAccount);
+            await accountService.Update(newAccount);
+            await clientStorage.UpdateAccount(newAccount);
 
             //Assert
             Assert.Contains(clientStorage.Data.Values, accountList => accountList.Any(a => a.Equals(newAccount)));
@@ -155,27 +128,20 @@ namespace ServiceTests
             //Arrange
             TestDataGenerator dataGenerator = new TestDataGenerator();
             IClientStorage clientStorage = new ClientStorage();
-            ClientService clientService = new ClientService();
+            IAccountService accountService = new AccountService();
+            IClientService clientService = new ClientService();
             GetFilterRequest request = new GetFilterRequest() { CountItem = 1 };
 
             //Act
             var clients = await clientService.GetClients(request);
-            var client = clients.FirstOrDefault();
-            if (client == null)
-            {
-                clients = await dataGenerator.GenerationClients(1);
-                client = clients.First();
-            }
-            var accountsClient = await clientService.GetAccounts(client.Id);
-            var accountClient = accountsClient.FirstOrDefault();
-            if (accountClient == null)
-            {
-                accountsClient = await dataGenerator.GenerationAccounts(1, client);
-                accountClient = accountsClient.First();
-            }
+            var client = clients.FirstOrDefault()
+                ?? await dataGenerator.GenerationClient();
+            var accountsClient = await accountService.GetAccountsClient(client.Id);
+            var accountClient = accountsClient.FirstOrDefault()
+                ?? await dataGenerator.GenerationAccount(client);
             clientStorage.Add(client);
-            clientStorage.AddAccount(accountClient);
-            clientStorage.DeleteAccount(accountClient);
+            await clientStorage.AddAccount(accountClient);
+            await clientStorage.DeleteAccount(accountClient);
 
             //Assert
             Assert.DoesNotContain(clientStorage.Data.Values,

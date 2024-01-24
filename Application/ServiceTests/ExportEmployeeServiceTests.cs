@@ -1,7 +1,6 @@
-﻿using Bogus;
-using ExportTool;
+﻿using ExportTool;
+using Models.Exports;
 using Models;
-using Models.Enums;
 using Services;
 using Xunit;
 
@@ -16,11 +15,11 @@ namespace ServiceTests
             string path = @"..\..\..\..\ExportTool\ExcelInfo";
             string fileCsv = "employees.csv";
             string fullPath = Path.Combine(path, fileCsv);
-            ExportEmployeeService exportService = new ExportEmployeeService(path, fileCsv);
+            IExportService<Employee, EmployeeExportModel> exportService = new ExportEmployeeService(path, fileCsv);
             EmployeeService employeeService = new EmployeeService();
 
             //Act
-            await exportService.ExportEmployeesForCsv(await employeeService.GetEmployees());
+            await exportService.ExportForCsv(await employeeService.GetEmployees());
             using var fileStream = new FileStream(fullPath, FileMode.Open);
 
             //Assert
@@ -30,35 +29,16 @@ namespace ServiceTests
         public async Task ImportEmployeesFromCsvFileToDbTest()
         {
             //Arrange
-            ExportEmployeeService exportService = new ExportEmployeeService(@"..\..\..\..\ExportTool\ExcelInfo", "employees.csv");
+            IExportService<Employee, EmployeeExportModel> exportService = new ExportEmployeeService(@"..\..\..\..\ExportTool\ExcelInfo", "employees.csv");
             EmployeeService employeeService = new EmployeeService();
-            PassportService passportService = new PassportService();
-            CurrencyService currencyService = new CurrencyService();
             TestDataGenerator generator = new TestDataGenerator();
-            Faker faker = new Faker();
 
             //Act
             var employees = await employeeService.GetEmployees();
-            var passport = generator.GenerationPassport();
-            var currency = new Currency(faker.Random.Number(15000), faker.PickRandom<CurrencyType>());
-            await currencyService.AddCurrency(currency);
-            await passportService.AddPassport(passport);
-            Employee newEmployee = new Employee(
-                passport.Id,
-                faker.Random.ReplaceNumbers("###-####-###"),
-                passport.GetFullName(),
-                passport.GetAge(),
-                faker.PickRandom<JobPosition>(),
-                currency.Id,
-                faker.Date.BetweenDateOnly(
-                    new DateOnly(2003, 10, 5),
-                    new DateOnly(2024, 1, 3))
-                .ToDateTime(new TimeOnly()),
-                faker.Date.FutureDateOnly(3)
-                .ToDateTime(new TimeOnly()));
+            var newEmployee = await generator.GenerationEmployee();
             employees.Add(newEmployee);
-            await exportService.ExportEmployeesForCsv(employees);
-            await exportService.ImportEmployeesFromCsv();
+            await exportService.ExportForCsv(employees);
+            await exportService.ImportFromCsvToDb();
 
             //Assert
             Assert.Contains(await employeeService.GetEmployees(), c => c.PassportId == newEmployee.PassportId);
@@ -70,11 +50,11 @@ namespace ServiceTests
             string path = @"..\..\..\..\ExportTool\JsonFiles";
             string fileCsv = "employees.json";
             string fullPath = Path.Combine(path, fileCsv);
-            ExportEmployeeService exportService = new ExportEmployeeService(path, fileCsv);
+            IExportService<Employee, EmployeeExportModel> exportService = new ExportEmployeeService(path, fileCsv);
             EmployeeService employeeService = new EmployeeService();
 
             //Act
-            await exportService.ExportEmployeesToJson(await employeeService.GetEmployees());
+            await exportService.ExportForJson(await employeeService.GetEmployees());
             using var fileStream = new FileStream(fullPath, FileMode.Open);
 
             //Assert
@@ -84,35 +64,16 @@ namespace ServiceTests
         public async Task ImportEmployeesFromJsonFileToDbTest()
         {
             //Arrange
-            ExportEmployeeService exportService = new ExportEmployeeService(@"..\..\..\..\ExportTool\JsonFiles", "employees.json");
+            IExportService<Employee, EmployeeExportModel> exportService = new ExportEmployeeService(@"..\..\..\..\ExportTool\JsonFiles", "employees.json");
             EmployeeService employeeService = new EmployeeService();
-            PassportService passportService = new PassportService();
-            CurrencyService currencyService = new CurrencyService();
             TestDataGenerator generator = new TestDataGenerator();
-            Faker faker = new Faker();
 
             //Act
             var employees = await employeeService.GetEmployees();
-            var passport = generator.GenerationPassport();
-            var currency = new Currency(faker.Random.Number(15000), faker.PickRandom<CurrencyType>());
-            await currencyService.AddCurrency(currency);
-            await passportService.AddPassport(passport);
-            Employee newEmployee = new Employee(
-                passport.Id,
-                faker.Random.ReplaceNumbers("###-####-###"),
-                passport.GetFullName(),
-                passport.GetAge(),
-                faker.PickRandom<JobPosition>(),
-                currency.Id,
-                faker.Date.BetweenDateOnly(
-                    new DateOnly(2003, 10, 5),
-                    new DateOnly(2024, 1, 3))
-                .ToDateTime(new TimeOnly()),
-                faker.Date.FutureDateOnly(3)
-                .ToDateTime(new TimeOnly()));
+            var newEmployee = await generator.GenerationEmployee();
             employees.Add(newEmployee);
-            string jsonEmployees = await exportService.ExportEmployeesToJson(employees);
-            await exportService.ImportClientsFromJson(jsonEmployees);
+            string jsonEmployees = await exportService.ExportForJson(employees);
+            await exportService.ImportFromJsonToDb(jsonEmployees);
 
             //Assert
             Assert.Contains(await employeeService.GetEmployees(), c => c.PassportId == newEmployee.PassportId);

@@ -27,9 +27,10 @@ namespace Models
         [Key]
         [Column("id")]
         public Guid Id { get; set; }
-        [ForeignKey("EmployeeId")]
+        [ForeignKey("Employee")]
         [Column("employee_id")]
         public Guid EmployeeId { get; set; }
+        public Employee? Employee { get; set; }
         [Column("name_company")]
         public string NameCompany { get; private set; }
         [Column("adress")]

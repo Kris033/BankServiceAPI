@@ -4,20 +4,18 @@ using Models.Validations;
 using BankDbConnection;
 using Models.Requests;
 using Microsoft.EntityFrameworkCore;
+using Services.Interfaces;
 
 namespace Services
 {
-    public class ClientService
+    public class ClientService : IClientService
     {
-        private readonly IClientStorage _accountsClient;
-        public ClientService() 
+        public ClientService () {}
+        public async Task<Client?> GetFirstClient() 
         {
-            _accountsClient = new ClientStorage();
+            using var db = new BankContext();
+            return await db.Client.FirstOrDefaultAsync();
         }
-        public Client GetFirstClient() => _accountsClient.Data.FirstOrDefault().Key;
-
-        public KeyValuePair<Client, List<Account>> GetFirstClientWithAccounts() 
-            => _accountsClient.Data.FirstOrDefault();
         public async Task<List<Client>> GetClients(GetFilterRequest? filterRequest = null)
         {
             using var db = new BankContext();
@@ -28,7 +26,7 @@ namespace Services
                 List<Passport> passportList = new List<Passport>();
                 await clients.ForEachAsync(async c =>
                 {
-                    var passport = await passportService.GetPassport(c.PassportId);
+                    var passport = await passportService.Get(c.PassportId);
                     if (passport != null) passportList.Add(passport);
                 });
                 var passports = passportList.AsQueryable();
@@ -57,8 +55,7 @@ namespace Services
                             .DateBorn <= filterRequest.DateBornTo);
                 passportList = passports.ToList();
                 var clientList = clients.ToList();
-                if (passportList.Count > 0)
-                    clientList = clientList.Where(c => passportList.Any(p => c.PassportId == p.Id)).ToList();
+                clientList = clientList.Where(c => passportList.Any(p => c.PassportId == p.Id)).ToList();
                 if (filterRequest.CountItem != null && filterRequest.CountItem > 0 && filterRequest.CountItem < clientList.Count())
                     clientList = clientList.Take((int)filterRequest.CountItem).ToList();
                 return clientList.ToList();
@@ -90,25 +87,16 @@ namespace Services
         {
             return $"Имя: {client.Name}\n" +
                 $"Возраст: {client.Age}\n" +
-                $"Номер телефона: {client.NumberPhone}\n";
+                $"Номер телефона: {client.NumberPhone}\n" + 
+                $"В черном списке: {client.InBlackList}\n";
         }
-        public async Task<Client?> GetClient(Guid idClient)
+        public async Task<Client?> Get(Guid idClient)
         {
             using var db = new BankContext();
             return await db.Client.FirstOrDefaultAsync(c => c.Id == idClient);
         }
-        public async Task<Account?> GetAccount(Guid idAccount)
-        {
-            using var db = new BankContext();
-            return await db.Account.FirstOrDefaultAsync(a => a.Id == idAccount);
-        }
-        public async Task<List<Account>> GetAccounts(Guid idClient)
-        {
-            using var db = new BankContext();
-            return await db.Account.Where(a => a.ClientId == idClient).ToListAsync();
-        }
 
-        public async Task AddClient(Client client)
+        public async Task Add(Client client)
         {
             client.Validation();
             using var db = new BankContext();
@@ -120,7 +108,7 @@ namespace Services
             db.Client.Add(client);
             await db.SaveChangesAsync();
         }
-        public async Task UpdateClient(Client client)
+        public async Task Update(Client client)
         {
             client.Validation();
             using var db = new BankContext();
@@ -129,44 +117,13 @@ namespace Services
             db.Client.Update(client);
             await db.SaveChangesAsync();
         }
-        public async Task DeleteClient(Guid idClient)
+        public async Task Delete(Guid idClient)
         {
             using var db = new BankContext();
             var client = await db.Client.FirstOrDefaultAsync(c => c.Id == idClient);
             if (client == null)
                 throw new ArgumentNullException("Удаляемый клиент не был найден");
             db.Client.Remove(client);
-            await db.SaveChangesAsync();
-        }
-        public async Task AddAccount(Account account)
-        {
-            account.Validation();
-            using var db = new BankContext();
-            if (!await db.Client.AnyAsync(c => c.Id == account.ClientId))
-                throw new ArgumentNullException("Такого клиента в реестре банка не существует");
-            db.Account.Add(account);
-            await db.SaveChangesAsync();
-        }
-        public async Task ChangeAccountClient(Account account)
-        {
-            account.Validation();
-            using var db = new BankContext();
-            if (!await db.Client.AnyAsync(c => c.Id == account.ClientId))
-                throw new ArgumentNullException("Такого клиента в реестре банка не существует");
-            if (!await db.Account.AnyAsync(a => a.Id == account.Id))
-                throw new ArgumentNullException("Такого банковского счета не существует");
-            if (!await db.Account.AnyAsync(a => a.ClientId == account.ClientId))
-                throw new ArgumentNullException("Такого банковского счета у клиента не существует");
-            db.Account.Update(account);
-            await db.SaveChangesAsync();
-        }
-        public async Task DeleteAccountClient(Guid idAccount)
-        {
-            using var db = new BankContext();
-            var account = await db.Account.FirstOrDefaultAsync(a => a.Id == idAccount);
-            if (account == null)
-                throw new ArgumentNullException("Удаляемый банковский счет не был найден");
-            db.Account.Remove(account);
             await db.SaveChangesAsync();
         }
     }

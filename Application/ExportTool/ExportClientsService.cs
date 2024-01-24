@@ -1,38 +1,39 @@
 ﻿using Models;
+using Models.Exports;
 using CsvHelper;
 using System.Globalization;
 using System.Text;
 using CsvHelper.Configuration;
 using Services;
-using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
 namespace ExportTool
 {
-    public class ExportClientsService
+    public class ExportClientsService : IExportService<Client, ClientExportModel>
     {
-        private string _pathToDirectory { get; set; }
-        private string _csvFileName { get; set; }
+        public string PathToDirectory { get; set; }
+        public string FileName { get; set; }
         public ExportClientsService(string pathToDirectory, string csvFileName) 
         {
-            _pathToDirectory = pathToDirectory;
-            _csvFileName = csvFileName;
+            PathToDirectory = pathToDirectory;
+            FileName = csvFileName;
         }
-        public async Task ExportClientsForCsv(List<Client> clients)
+        public ExportClientsService() { }
+        public async Task ExportForCsv(List<Client> clients)
         {
-            var listClient = ConvertatorClients(clients);
-            DirectoryInfo dirInfo = new DirectoryInfo(_pathToDirectory);
+            var listClient = await ConvertatorToExportListModel(clients);
+            DirectoryInfo dirInfo = new DirectoryInfo(PathToDirectory);
             if (!dirInfo.Exists) dirInfo.Create();
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(PathToDirectory, FileName);
             using var fileStream = new FileStream(fullPath, FileMode.Create);
             using var streamWriter = new StreamWriter(fileStream, Encoding.UTF8);
             using var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
             await csvWriter.WriteRecordsAsync(listClient);
             await csvWriter.FlushAsync();
         }
-        public async Task ImportClientsFromCsv()
+        public async Task ImportFromCsvToDb()
         {
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(PathToDirectory, FileName);
             var config = new CsvConfiguration(CultureInfo.InvariantCulture);
             using var streamReader = new StreamReader(fullPath);
             using var csvReader = new CsvReader(streamReader, config);
@@ -49,54 +50,59 @@ namespace ExportTool
                     csvReader.GetField<string>("Name")!,
                     csvReader.GetField<int>("Age"))
                 {
+                    Id = csvReader.GetField<Guid>("Id"),
                     InBlackList = csvReader.GetField<bool>("InBlackList")
                 };
                 clientsList.Add(clientCsv);
             }
             foreach (var clientCsv in clientsList)
-            {
                 if (!clientsListFromDb.Any(c => c.PassportId == clientCsv.PassportId))
-                {
-                    await clientService.AddClient(clientCsv);
-                }
-            }
+                    await clientService.Add(clientCsv);
         }
-        public async Task<string> ExportClientsToJson(List<Client> clients)
+        public async Task<string> ExportForJson(List<Client> clients)
         {
-            var listClient = ConvertatorClients(clients);
-            DirectoryInfo dirInfo = new DirectoryInfo(_pathToDirectory);
+            var listClient = await ConvertatorToExportListModel(clients);
+            DirectoryInfo dirInfo = new DirectoryInfo(PathToDirectory);
             if (!dirInfo.Exists) dirInfo.Create();
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(PathToDirectory, FileName);
             using var fileStream = new FileStream(fullPath, FileMode.Create);
             using var streamWriter = new StreamWriter(fileStream, Encoding.UTF8);
-            var jsonClients = JsonConvert.SerializeObject(clients);
+            var jsonClients = JsonConvert.SerializeObject(listClient);
             await streamWriter.WriteLineAsync(jsonClients);
             return jsonClients;
         }
-        public async Task ImportClientsFromJson(string clientsJson)
+        public async Task ImportFromJsonToDb(string clientsJson)
         {
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(PathToDirectory, FileName);
             using var streamReader = new StreamReader(fullPath);
             var clientService = new ClientService();
             var clientsListFromDb = await clientService.GetClients();
             var clients = JsonConvert.DeserializeObject<Client[]>(clientsJson);
-            foreach (var client in clients)
-            {
+
+            foreach (var client in clients!)
                 if (!clientsListFromDb.Any(c => c.PassportId == client.PassportId))
-                {
-                    await clientService.AddClient(client);
-                }
-            }
+                    await clientService.Add(client);
         }
-        private List<ClientModelCsv> ConvertatorClients(List<Client> clients) 
-            => clients
-                .Select(c => 
-                new ClientModelCsv(
-                    c.PassportId,
-                    c.Name,
-                    c.Age,
-                    c.NumberPhone,
-                    c.InBlackList)).ToList();
+        public async Task<ClientExportModel> ConvertatorToExportModel(Client client)
+            => new ClientExportModel(
+                client.PassportId,
+                client.Name,
+                client.Age,
+                client.NumberPhone,
+                client.InBlackList,
+                await new ExportAccountsService()
+                .ConvertatorToExportListModel(
+                    await new AccountService()
+                    .GetAccountsClient(client.Id)))
+            { Id = client.Id };
+        public async Task<List<ClientExportModel>> ConvertatorToExportListModel(List<Client> clients)
+        {
+            List<ClientExportModel> clientExports = new List<ClientExportModel>();
+            foreach (var client in clients)
+                clientExports
+                    .Add(await ConvertatorToExportModel(client));
+            return clientExports;
+        }
         
     }
 }

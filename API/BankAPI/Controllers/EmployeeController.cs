@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ExportTool;
+using Microsoft.AspNetCore.Mvc;
 using Models;
+using Models.Exports;
 using Models.Requests;
 using Services;
 
@@ -14,30 +16,23 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
         private ILogger<EmployeeController> _logger;
+        
         [HttpGet]
-        public async Task<IEnumerable<Employee>> GetEmployees([FromQuery] GetFilterRequest? filterRequest = null)
-        {
-            return await new EmployeeService().GetEmployees(filterRequest);
-        }
-        [HttpGet("{id}")]
-        public async Task<Employee?> Get(Guid idEmployee)
-        {
-            return await new EmployeeService().GetEmployee(idEmployee);
-        }
+        public async Task<EmployeeExportModel?> Get(Guid idEmployee)
+            => await new ExportEmployeeService().ConvertatorToExportModel(
+                await new EmployeeService().Get(idEmployee));
+        
         [HttpPost]
-        public async Task Add(Employee employee)
-        {
-            await new EmployeeService().ChangeEmployee(employee);
-        }
+        public async Task Add(Employee employee) 
+            => await new EmployeeService().Add(employee);
+        
         [HttpPut]
-        public async Task Update(Employee employee)
-        {
-            await new EmployeeService().AddEmployee(employee);
-        }
-        [HttpDelete("{id}")]
-        public async Task Delete(Guid idEmployee)
-        {
-            await new EmployeeService().DeleteEmployee(idEmployee);
-        }
+        public async Task Update(Employee employee) 
+            => await new EmployeeService().Update(employee);
+        
+        [HttpDelete]
+        public async Task Delete(Guid idEmployee) 
+            => await new EmployeeService().Delete(idEmployee);
+        
     }
 }

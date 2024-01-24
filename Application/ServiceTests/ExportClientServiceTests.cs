@@ -1,5 +1,6 @@
-﻿using Bogus;
-using ExportTool;
+﻿using ExportTool;
+using Models;
+using Models.Exports;
 using Services;
 using Xunit;
 
@@ -14,38 +15,30 @@ namespace ServiceTests
             string path = @"..\..\..\..\ExportTool\ExcelInfo";
             string fileCsv = "clients.csv";
             string fullPath = Path.Combine(path, fileCsv);
-            ExportClientsService exportService = new ExportClientsService(path, fileCsv);
+            IExportService<Client, ClientExportModel> exportService = new ExportClientsService(path, fileCsv);
             ClientService clientService = new ClientService();
 
             //Act
-            await exportService.ExportClientsForCsv(await clientService.GetClients());
+            await exportService.ExportForCsv(await clientService.GetClients());
             using var fileStream = new FileStream(fullPath, FileMode.Open);
 
             //Assert
-            Assert.True(fileStream.Length != 0);
+            Assert.NotEqual(0, fileStream.Length);
         }
         [Fact]
         public async Task ImportClientsFromCsvFileToDbTest()
         {
             //Arrange
-            ExportClientsService exportService = new ExportClientsService(@"..\..\..\..\ExportTool\ExcelInfo", "clients.csv");
+            IExportService<Client, ClientExportModel> exportService = new ExportClientsService(@"..\..\..\..\ExportTool\ExcelInfo", "clients.csv");
             ClientService clientService = new ClientService();
-            PassportService passportService = new PassportService();
             TestDataGenerator generator = new TestDataGenerator();
-            Faker faker = new Faker();
 
             //Act
             var clients = await clientService.GetClients();
-            var passport = generator.GenerationPassport();
-            await passportService.AddPassport(passport);
-            Models.Client newClient = new Models.Client(
-                    faker.Random.ReplaceNumbers("###-####-###"),
-                    passport.Id,
-                    passport.GetFullName(),
-                    passport.GetAge());
+            var newClient = await generator.GenerationClient();
             clients.Add(newClient);
-            await exportService.ExportClientsForCsv(clients);
-            await exportService.ImportClientsFromCsv();
+            await exportService.ExportForCsv(clients);
+            await exportService.ImportFromCsvToDb();
 
             //Assert
             Assert.Contains(await clientService.GetClients(), c => c.PassportId == newClient.PassportId);
@@ -57,11 +50,11 @@ namespace ServiceTests
             string path = @"..\..\..\..\ExportTool\JsonFiles";
             string fileCsv = "clients.json";
             string fullPath = Path.Combine(path, fileCsv);
-            ExportClientsService exportService = new ExportClientsService(path, fileCsv);
+            IExportService<Client, ClientExportModel> exportService = new ExportClientsService(path, fileCsv);
             ClientService clientService = new ClientService();
 
             //Act
-            await exportService.ExportClientsToJson(await clientService.GetClients());
+            await exportService.ExportForJson(await clientService.GetClients());
             using var fileStream = new FileStream(fullPath, FileMode.Open);
 
             //Assert
@@ -71,24 +64,16 @@ namespace ServiceTests
         public async Task ImportClientsFromJsonFileToDbTest()
         {
             //Arrange
-            ExportClientsService exportService = new ExportClientsService(@"..\..\..\..\ExportTool\JsonFiles", "clients.json");
+            IExportService<Client, ClientExportModel> exportService = new ExportClientsService(@"..\..\..\..\ExportTool\JsonFiles", "clients.json");
             ClientService clientService = new ClientService();
-            PassportService passportService = new PassportService();
             TestDataGenerator generator = new TestDataGenerator();
-            Faker faker = new Faker();
 
             //Act
             var clients = await clientService.GetClients();
-            var passport = generator.GenerationPassport();
-            await passportService.AddPassport(passport);
-            Models.Client newClient = new Models.Client(
-                    faker.Random.ReplaceNumbers("###-####-###"),
-                    passport.Id,
-                    passport.GetFullName(),
-                    passport.GetAge());
+            var newClient = await generator.GenerationClient();
             clients.Add(newClient);
-            string jsonResult = await exportService.ExportClientsToJson(clients);
-            await exportService.ImportClientsFromJson(jsonResult);
+            string jsonResult = await exportService.ExportForJson(clients);
+            await exportService.ImportFromJsonToDb(jsonResult);
 
             //Assert
             Assert.Contains(await clientService.GetClients(), c => c.PassportId == newClient.PassportId);

@@ -4,14 +4,18 @@ using Models.Validations;
 using BankDbConnection;
 using Models.Requests;
 using Microsoft.EntityFrameworkCore;
+using Services.Interfaces;
 
 namespace Services
 {
-    public class EmployeeService
+    public class EmployeeService : IEmployeeService
     {
-        private readonly IEmployeeStorage _employees = new EmployeeStorage();
         public EmployeeService() { }
-        public Employee GetFirstEmployee() => _employees.DataEmployees.First();
+        public async Task<Employee?> GetFirstEmployee() 
+        {
+            using var db = new BankContext();
+            return await db.Employee.FirstOrDefaultAsync();
+        }
         public async Task<List<Employee>> GetEmployees(GetFilterRequest? filterRequest = null)
         {
             using var db = new BankContext();
@@ -22,7 +26,7 @@ namespace Services
                 List<Passport> passportList = new List<Passport>();
                 await employees.ForEachAsync(async c =>
                 {
-                    var passport = await passportService.GetPassport(c.PassportId);
+                    var passport = await passportService.Get(c.PassportId);
                     if (passport != null) passportList.Add(passport);
                 });
                 var passports = passportList.AsQueryable();
@@ -49,13 +53,13 @@ namespace Services
                     passports = passports
                         .Where(p => p!
                             .DateBorn <= filterRequest.DateBornTo);
-                passportList = passports.ToList();
                 var employeeList = employees.ToList();
-                if (passportList.Count > 0)
-                    employeeList = employeeList.Where(c => passportList.Any(p => c.PassportId == p.Id)).ToList();
-                if (filterRequest.CountItem != null && filterRequest.CountItem > 0 && filterRequest.CountItem < employeeList.Count())
+                employeeList = employeeList.Where(c => passports.Any(p => c.PassportId == p.Id)).ToList();
+                if (filterRequest.CountItem != null 
+                    && filterRequest.CountItem > 0 
+                    && filterRequest.CountItem < employeeList.Count())
                     employeeList = employeeList.Take((int)filterRequest.CountItem).ToList();
-                return employeeList.ToList();
+                return employeeList;
             }
             return employees.ToList();
         }
@@ -79,13 +83,13 @@ namespace Services
             / await db.Employee.CountAsync()
             : 0;
         }
-        public async Task<Employee?> GetEmployee(Guid idEmployee)
+        public async Task<Employee?> Get(Guid idEmployee)
         {
             using var db = new BankContext();
             return await db.Employee.FirstOrDefaultAsync(e => e.Id == idEmployee);
         }
            
-        public async Task<string> GetSalary(Guid idSalaryCurrency)
+        public async Task<string> GetStringSalary(Guid idSalaryCurrency)
         {
             using var db = new BankContext();
             var salary = await db.Currency.FirstOrDefaultAsync(c => c.Id == idSalaryCurrency);
@@ -99,12 +103,12 @@ namespace Services
                 $"Возраст: {employee.Age}\n" +
                 $"Номер телефона: {employee.NumberPhone}\n" +
                 $"Должность: {employee.JobPositionType}\n" +
-                $"Заработная плата: {GetSalary(employee.CurrencyIdSalary)}\n" +
+                $"Заработная плата: {GetStringSalary(employee.CurrencyIdSalary)}\n" +
                 $"Приступил к работе: {employee.StartWorkDate}\n" +
                 $"Контракт заканчивается через " +
                 $"{Convert.ToDateTime(employee.EndContractDate.ToString()).Subtract(DateTime.Today).TotalDays} дней\n";
         }
-        public async Task AddEmployee(Employee employee)
+        public async Task Add(Employee employee)
         {
             employee.Validation();
             using var db = new BankContext();
@@ -116,7 +120,7 @@ namespace Services
             db.Employee.Add(employee);
             await db.SaveChangesAsync();
         }
-        public async Task ChangeEmployee(Employee employee)
+        public async Task Update(Employee employee)
         {
             employee.Validation();
             using var db = new BankContext();
@@ -127,7 +131,7 @@ namespace Services
             db.Employee.Update(employee);
             await db.SaveChangesAsync();
         }
-        public async Task DeleteEmployee(Guid idEmployee)
+        public async Task Delete(Guid idEmployee)
         {
             using var db = new BankContext();
             var employee = await db.Employee.FirstOrDefaultAsync(e => e.Id == idEmployee);

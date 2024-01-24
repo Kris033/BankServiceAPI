@@ -1,12 +1,13 @@
 ﻿using Models;
 using BankDbConnection;
 using Microsoft.EntityFrameworkCore;
+using Services.Interfaces;
 
 namespace Services
 {
-    public class ContractService
+    public class ContractService : IContractService
     {
-        public async Task<Contract?> GetContract(Guid contractId)
+        public async Task<Contract?> Get(Guid contractId)
         {
             using var db = new BankContext();
             return await db.Contract.FirstOrDefaultAsync(c => c.Id == contractId);
@@ -43,7 +44,7 @@ namespace Services
                 }
             }
         }
-        public async Task AddContract(Contract contract)
+        public async Task Add(Contract contract)
         {
             using var db = new BankContext();
             if (await db.Contract.AnyAsync(c => c.EmployeeId == contract.EmployeeId))
@@ -51,7 +52,7 @@ namespace Services
             db.Contract.Add(contract);
             await db.SaveChangesAsync();
         }
-        public async Task UpdateContract(Contract contract)
+        public async Task Update(Contract contract)
         {
             using var db = new BankContext();
             if(!await db.Contract.AnyAsync(c => c.EmployeeId == contract.EmployeeId))
@@ -62,11 +63,11 @@ namespace Services
             await db.SaveChangesAsync();
             
         }
-        public async Task DeleteContract(Guid employeeGuid)
+        public async Task Delete(Guid idContract)
         {
             using var db = new BankContext();
-            var contract = await db.Contract.FirstOrDefaultAsync(c => c.EmployeeId == employeeGuid);
-            if(contract != null)
+            var contract = await db.Contract.FirstOrDefaultAsync(c => c.Id == idContract);
+            if (contract != null)
             {
                 db.Contract.Remove(contract);
                 await db.SaveChangesAsync();

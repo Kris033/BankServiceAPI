@@ -1,11 +1,10 @@
-﻿using Models;
-using Models.Enums;
+﻿using Models.Enums;
 
-namespace ExportTool
+namespace Models.Exports
 {
-    public class EmployeeModelCsv
+    public class EmployeeExportModel
     {
-        public EmployeeModelCsv(
+        public EmployeeExportModel(
             string name,
             int age,
             string numberPhone,
@@ -14,7 +13,6 @@ namespace ExportTool
             Currency salary, 
             DateTime startDateWork,
             DateTime endDateWork,
-            Guid? contractId,
             Guid passportId) 
         {
             Name = name;
@@ -25,9 +23,9 @@ namespace ExportTool
             Salary = salary;
             StartDateWork = startDateWork;
             EndDateWork = endDateWork;
-            ContractId = contractId;
             PassportId = passportId;
         }
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public int Age { get; set; }
         public string NumberPhone { get; set; }
@@ -36,7 +34,6 @@ namespace ExportTool
         public Currency Salary { get; set; }
         public DateTime StartDateWork { get; set; }
         public DateTime EndDateWork { get; set; }
-        public Guid? ContractId { get; set; }
         public Guid PassportId { get; set; }
     }
 }

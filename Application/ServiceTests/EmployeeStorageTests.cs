@@ -20,12 +20,8 @@ namespace ServiceTests
 
             //Act
             var listEmployee = await employeeService.GetEmployees(filterRequest);
-            var employee = listEmployee.FirstOrDefault();
-            if (employee == null)
-            {
-                listEmployee = await dataGenerator.GenerationEmployees(1);
-                employee = listEmployee.First();
-            }
+            var employee = listEmployee.FirstOrDefault() 
+                ?? await dataGenerator.GenerationEmployee();
             employees.Add(employee);
 
             //Assert
@@ -42,12 +38,8 @@ namespace ServiceTests
 
             //Act
             var listEmployee = await employeeService.GetEmployees(filterRequest);
-            var employee = listEmployee.FirstOrDefault();
-            if (employee == null)
-            {
-                listEmployee = await dataGenerator.GenerationEmployees(1);
-                employee = listEmployee.First();
-            }
+            var employee = listEmployee.FirstOrDefault()
+                ?? await dataGenerator.GenerationEmployee();
             employees.Add(employee);
             employee.EndContractDate = employee.EndContractDate.AddYears(1);
             employees.Update(employee);
@@ -66,29 +58,13 @@ namespace ServiceTests
 
             //Act
             var listEmployee = await employeeService.GetEmployees(filterRequest);
-            var employee = listEmployee.FirstOrDefault();
-            if (employee == null)
-            {
-                listEmployee = await dataGenerator.GenerationEmployees(1);
-                employee = listEmployee.First();
-            }
+            var employee = listEmployee.FirstOrDefault()
+                ?? await dataGenerator.GenerationEmployee();
             employees.Add(employee);
             employees.Delete(employee);
 
             //Assert
             Assert.DoesNotContain(employee, employees.DataEmployees);
-        }
-        [Fact]
-        public async Task FilterSearchStorageTest()
-        {
-            //Arrange
-            EmployeeService employeeService = new EmployeeService();
-
-            //Act
-            List<Employee> employees = await employeeService.GetEmployees(new GetFilterRequest() { DateBornFrom = new DateTime(1996, 1, 1) });
-
-            //Assert
-            Assert.DoesNotContain(employees, e => e.Age > 28);
         }
     }
 }
